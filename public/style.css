@@ -134,3 +134,140 @@ button:hover {
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
 }
+
+/* ==========================
+   ADMIN / DASHBOARD LAYOUT
+========================== */
+
+/* Layout */
+.dashboard-body {
+    display: flex;
+    margin: 0;
+}
+
+/* ==========================
+   SIDEBAR
+========================== */
+.sidebar {
+    width: 250px;
+    background: #2b2b2b;
+    color: #fff;
+    height: 100vh;
+    transition: 0.3s;
+    overflow-y: auto;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar h2 {
+    padding: 20px;
+    font-size: 18px;
+    border-bottom: 1px solid #444;
+    color: #ff4d4d;
+}
+
+/* Links */
+.sidebar a {
+    display: block;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #ddd;
+}
+
+.sidebar a:hover {
+    background: #444;
+}
+
+/* Category label */
+.sidebar .category {
+    padding: 10px 20px;
+    color: gold;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+/* Collapse behavior */
+.sidebar.collapsed a,
+.sidebar.collapsed .category,
+.sidebar.collapsed h2 {
+    text-align: center;
+    font-size: 0;
+}
+
+/* ==========================
+   MAIN CONTENT
+========================== */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1e1e;
+    padding: 10px 20px;
+    border-bottom: 1px solid #444;
+}
+
+.hamburger {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.username {
+    font-weight: bold;
+}
+
+/* Content */
+.content {
+    padding: 20px;
+}
+
+/* Cards */
+.card {
+    background: #2b2b2b;
+    border: 1px solid #ff4d4d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #ff4d4d;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    text-align: center;
+    padding: 10px;
+    color: #aaa;
+    border-top: 1px solid #444;
+}
+
+/* ==========================
+   MOBILE
+========================== */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main {
+        width: 100%;
+    }
+}

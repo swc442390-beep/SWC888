@@ -1,220 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard - Mapagmahal</title>
-<link rel="stylesheet" href="style.css">
-<!-- Font Awesome for icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<style>
-/* ==========================
-   SIDEBAR
-========================== */
-body {
-    display: flex;
-    min-height: 100vh;
-}
-.sidebar {
-    width: 250px;
-    background-color: #2b2b2b;
-    color: #f5f5f5;
-    flex-shrink: 0;
-    transition: transform 0.3s ease;
-}
-.sidebar.collapsed {
-    transform: translateX(-250px);
-}
-.sidebar .brand {
-    padding: 20px;
-    font-size: 22px;
-    text-align: center;
-    color: #ff4d4d;
-    font-weight: bold;
-    border-bottom: 1px solid #444;
-}
-.sidebar .nav-link {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    color: #f5f5f5;
-    text-decoration: none;
-    cursor: pointer;
-}
-.sidebar .nav-link:hover {
-    background-color: #444;
-}
-.sidebar .category {
-    padding: 10px 20px;
-    font-weight: bold;
-    color: gold;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-/* ==========================
-   HEADER
-========================== */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #1e1e1e;
-    color: #f5f5f5;
-    padding: 10px 20px;
-    width: 100%;
-    border-bottom: 1px solid #444;
-}
-.header .hamburger {
-    font-size: 24px;
-    cursor: pointer;
-}
-.header .username {
-    font-weight: bold;
-}
-
-/* ==========================
-   MAIN CONTENT
-========================== */
-.main-content {
-    flex-grow: 1;
-    padding: 20px;
-}
-.page-title {
-    font-size: 22px;
-    margin-bottom: 20px;
-}
-.card {
-    background-color: #2b2b2b;
-    border: 1px solid #ff4d4d;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-.card h3 {
-    margin-top: 0;
-    color: #ff4d4d;
-}
-.card button {
-    margin-top: 10px;
-}
-
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 10px;
-    font-size: 12px;
-    color: #aaa;
-    border-top: 1px solid #444;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        height: 100%;
-        z-index: 100;
-    }
-    body {
-        flex-direction: column;
-    }
-    .main-content {
-        padding: 10px;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Console</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-    <div class="brand">Mapagmahal</div>
+<body class="dashboard-body">
 
-    <a class="nav-link" href="#"><i class="fas fa-tachometer-alt"></i>&nbsp; Dashboard</a>
-    <div class="category">Wallet</div>
-    <a class="nav-link" href="#">Wallet Station</a>
-    <a class="nav-link" href="#">Wallet Logs</a>
-    <a class="nav-link" href="#">Convert Comm</a>
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
 
-    <div class="category">Players</div>
-    <a class="nav-link" href="#">Agents</a>
-    <a class="nav-link" href="#">Active Players</a>
-    <a class="nav-link" href="#">Approval Players</a>
-    <a class="nav-link" href="#">Deleted Players</a>
+        <h2>Welcome, Admin</h2>
 
-    <div class="category">Settings</div>
-    <a class="nav-link" href="#">Change Password</a>
-    <a class="nav-link" href="#">Logout</a>
-</div>
+        <a href="#">Dashboard</a>
+        <a href="#">Summary Report</a>
+        <a href="#">Wallet Logs</a>
+        <a href="#">Commission Logs</a>
+        <a href="#">Commission Withdrawals</a>
+        <a href="#">Archives</a>
 
-<!-- Main content -->
-<div class="main-content">
-    <!-- Header -->
-    <div class="header">
-        <div class="hamburger" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
+        <div class="category">Downlines</div>
+        <a href="#">Agents</a>
+        <a href="#">Players</a>
+        <a href="#">Pending Approvals</a>
+
+        <div class="category">Settings</div>
+        <a href="#">Change Password</a>
+        <a href="#">Logout</a>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+            <div class="username">Admin</div>
         </div>
-        <div class="username" id="usernameDisplay">Admin</div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <h2>Dashboard</h2>
+
+            <!-- Membership Link -->
+            <div class="card">
+                <h3>Your Membership Link</h3>
+                <input type="text" value="https://your-site.com/ref=12345" style="width:100%; padding:8px;">
+                <button onclick="copyLink()">COPY YOUR LINK</button>
+            </div>
+
+            <!-- Wallet -->
+            <div class="card">
+                <h3>Wallet Balance</h3>
+                <p>0 Points</p>
+            </div>
+
+            <!-- Commission -->
+            <div class="card">
+                <h3>Commission Earnings</h3>
+                <p>0 Points (0%)</p>
+            </div>
+
+            <!-- Agents -->
+            <div class="card">
+                <h3>Agents' Wallet</h3>
+                <p>0 Active Agents</p>
+            </div>
+
+            <!-- Players -->
+            <div class="card">
+                <h3>Players' Wallet</h3>
+                <p>0 Active Players</p>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            © 2024 Mapagmahal. All rights reserved.
+        </footer>
+
     </div>
 
-    <!-- Page Title -->
-    <div class="page-title">Home / Dashboard</div>
+    <!-- JAVASCRIPT -->
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
 
-    <!-- Referral Link -->
-    <div class="card">
-        <h3>Referral Link</h3>
-        <input type="text" id="referralLink" readonly style="width:80%; padding:8px;">
-        <button onclick="copyReferral()">COPY YOUR LINK</button>
-    </div>
-
-    <!-- Total Wallet -->
-    <div class="card">
-        <h3>Total Wallet</h3>
-        <p id="totalWallet">0 Points</p>
-    </div>
-
-    <!-- Total Commission -->
-    <div class="card">
-        <h3>Total Commission</h3>
-        <p id="totalCommission">0 Points (0%)</p>
-    </div>
-</div>
-
-<!-- Footer -->
-<footer>© 2024 Mapagmahal. All rights reserved.</footer>
-
-<script>
-// Toggle sidebar
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('collapsed');
-}
-
-// Copy referral link
-function copyReferral() {
-    const referral = document.getElementById('referralLink');
-    referral.select();
-    referral.setSelectionRange(0, 99999);
-    document.execCommand('copy');
-    alert("Referral link copied!");
-}
-
-// Fetch admin dashboard data
-async function loadDashboard() {
-    try {
-        const res = await fetch('/api/admin/dashboard'); // Endpoint to fetch wallet, commission, referral
-        const data = await res.json();
-
-        document.getElementById('referralLink').value = data.referralLink;
-        document.getElementById('totalWallet').innerText = data.wallet + " Points";
-        document.getElementById('totalCommission').innerText = data.commission + " Points (" + data.commissionPercent + "%)";
-        document.getElementById('usernameDisplay').innerText = data.username;
-    } catch(err) {
-        console.error(err);
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('active'); // mobile
+        } else {
+            sidebar.classList.toggle('collapsed'); // desktop
+        }
     }
-}
 
-window.onload = loadDashboard;
-</script>
+    function copyLink() {
+        const input = document.querySelector('input');
+        input.select();
+        document.execCommand("copy");
+        alert("Link copied!");
+    }
+    </script>
 
 </body>
 </html>
