@@ -1,6 +1,10 @@
 /* ==========================
    RESET & BASE
 ========================== */
+* {
+    box-sizing: border-box; /* important for input sizing */
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -10,9 +14,6 @@ body {
 }
 
 /* ==========================
-   LOGIN CONTAINER
-========================== */
-/* ==========================
    LOGIN CONTAINER AS MESSAGE BOX
 ========================== */
 .login-container {
@@ -20,12 +21,12 @@ body {
     flex-direction: column;
     align-items: center;
     padding: 40px 30px;
-    background-color: #2b2b2b;                 /* dark box */
-    border: 2px solid #ff4d4d;                 /* red border */
+    background-color: #2b2b2b;           /* dark box */
+    border: 2px solid #ff4d4d;           /* red border */
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); /* subtle glow */
-    max-width: 360px;                          /* fixed box width */
-    margin: 80px auto;                          /* center vertically with spacing */
+    max-width: 360px;                    /* fixed box width */
+    margin: 80px auto;                   /* center on page */
 }
 
 /* Logo */
@@ -41,84 +42,11 @@ h1 {
     font-size: 28px;
 }
 
-/* Inputs with labels */
-.input-group {
-    width: 100%;
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #aaa;
-}
-
-/* Input with icon */
-.input-icon {
-    position: relative;
-}
-
-.input-icon i {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #aaa;
-}
-
-.input-icon input {
-    width: 100%;
-    padding: 12px 12px 12px 36px; /* padding for icon */
-    border: 1px solid #555;
-    border-radius: 6px;
-    background-color: #2b2b2b;
-    color: #f5f5f5;
-    font-size: 16px;
-}
-
-input::placeholder {
-    color: #777;
-}
-
-/* Button */
-button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-button:hover {
-    background-color: #e60000;
-}
-
-/* Mobile adjustments */
-@media (max-width: 600px) {
-    .login-container {
-        margin: 50px 20px; /* reduce top margin on mobile */
-        padding: 30px 20px;
-    }
-    h1 {
-        font-size: 24px;
-    }
-    input, button {
-        font-size: 14px;
-    }
-}
-
 /* ==========================
-   INPUT GROUP
+   INPUT GROUP WITH ICONS
 ========================== */
 .input-group {
     width: 100%;
-    max-width: 300px;
     margin-bottom: 15px;
     text-align: left;
 }
@@ -143,7 +71,7 @@ button:hover {
 }
 
 .input-icon input {
-    width: 100%;
+    width: 100%;                   /* fill container */
     padding: 12px 12px 12px 36px; /* left padding for icon */
     border: 1px solid #555;
     border-radius: 6px;
@@ -152,7 +80,6 @@ button:hover {
     font-size: 16px;
 }
 
-/* Placeholder color */
 input::placeholder {
     color: #777;
 }
@@ -162,7 +89,6 @@ input::placeholder {
 ========================== */
 button {
     width: 100%;
-    max-width: 300px;
     padding: 12px;
     margin-top: 12px;
     background-color: #ff4d4d;
@@ -179,7 +105,25 @@ button:hover {
 }
 
 /* ==========================
-   RESPONSIVE VIDEO (for future use)
+   MEDIA QUERIES FOR MOBILE
+========================== */
+@media (max-width: 600px) {
+    .login-container {
+        margin: 50px 20px; /* smaller margins */
+        padding: 30px 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    input, button {
+        font-size: 14px;
+    }
+}
+
+/* ==========================
+   RESPONSIVE VIDEO (future use)
 ========================== */
 .responsive-video {
     width: 100%;
@@ -189,21 +133,4 @@ button:hover {
     margin: 20px auto;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-}
-
-/* ==========================
-   MEDIA QUERIES FOR MOBILE
-========================== */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 24px;
-    }
-
-    input, button {
-        font-size: 14px;
-    }
-
-    .login-container {
-        padding: 20px;
-    }
 }
