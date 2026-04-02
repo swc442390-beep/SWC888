@@ -8,7 +8,15 @@ body {
     text-align: center;
     color: #f5f5f5; /* light gray text for contrast */
 }
-
+/* LOGIN CONTAINER */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
 /* ==========================
    HEADINGS
 ========================== */
