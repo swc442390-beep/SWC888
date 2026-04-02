@@ -3,17 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Live Betting</title>
+    <title>Login - Mapagmahal</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
     <div class="login-container">
-        <h1>Live Betting System</h1>
+        <!-- Logo -->
+        <img src="logo.png" alt="Mapagmahal Logo" class="logo">
 
-        <input type="text" id="username" placeholder="Username"><br>
-        <input type="password" id="password" placeholder="Password"><br>
-        <button onclick="login()">Login</button>
+        <!-- Site Title -->
+        <h1>Mapagmahal</h1>
+
+        <!-- Username Field -->
+        <div class="input-group">
+            <label for="username">Username</label>
+            <div class="input-icon">
+                <i class="fas fa-envelope"></i>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="input-group">
+            <label for="password">Password</label>
+            <div class="input-icon">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+        </div>
+
+        <!-- Sign In Button -->
+        <button onclick="login()">Sign In</button>
     </div>
 
     <script>

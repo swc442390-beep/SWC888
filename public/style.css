@@ -1,99 +1,92 @@
-/* ==========================
-   RESET & BASE
-========================== */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #1e1e1e; /* dark gray background */
-    text-align: center;
-    color: #f5f5f5; /* light gray text for contrast */
-}
-/* LOGIN CONTAINER */
-.login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-/* ==========================
-   HEADINGS
-========================== */
-h1 {
-    margin-top: 40px;
-    color: #ff4d4d; /* subtle red for emphasis */
-    font-size: 28px;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mapagmahal</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
 
-/* ==========================
-   INPUTS
-========================== */
-input[type="text"], input[type="password"] {
-    width: 90%;
-    max-width: 300px;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #555; /* dark border */
-    border-radius: 6px;
-    background-color: #2b2b2b; /* slightly lighter dark gray */
-    color: #f5f5f5;
-    font-size: 16px;
-}
+    <div class="login-container">
+        <!-- Logo -->
+        <img src="logo.png" alt="Mapagmahal Logo" class="logo">
 
-input::placeholder {
-    color: #aaa; /* gray placeholder */
-}
+        <!-- Site Title -->
+        <h1>Mapagmahal</h1>
 
-/* ==========================
-   BUTTONS
-========================== */
-button {
-    width: 90%;
-    max-width: 300px;
-    padding: 12px;
-    margin-top: 12px;
-    background-color: #ff4d4d; /* red button */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+        <!-- Username Field -->
+        <div class="input-group">
+            <label for="username">Username</label>
+            <div class="input-icon">
+                <i class="fas fa-envelope"></i>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+        </div>
 
-button:hover {
-    background-color: #e60000; /* darker red on hover */
-}
+        <!-- Password Field -->
+        <div class="input-group">
+            <label for="password">Password</label>
+            <div class="input-icon">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+        </div>
 
-/* ==========================
-   RESPONSIVE VIDEO
-========================== */
-.responsive-video {
-    width: 100%;
-    max-width: 800px;
-    aspect-ratio: 16/9;
-    border: 0;
-    margin: 20px auto;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3); /* subtle red glow */
-}
+        <!-- Sign In Button -->
+        <button onclick="login()">Sign In</button>
+    </div>
 
-/* ==========================
-   MEDIA QUERIES FOR MOBILE
-========================== */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 24px;
+    <script>
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            alert("Please enter both username and password");
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Redirect based on role
+            switch(data.role) {
+                case "admin":
+                    window.location.href = "admin.html";
+                    break;
+                case "player":
+                    window.location.href = "player.html";
+                    break;
+                case "master_agent":
+                    alert("Master Agent panel coming next");
+                    break;
+                case "declarator":
+                    alert("Declarator panel coming next");
+                    break;
+                default:
+                    alert("Unknown role");
+            }
+
+        } catch (err) {
+            alert("Server error");
+            console.error(err);
+        }
     }
+    </script>
 
-    input, button {
-        width: 95%;
-        max-width: 280px;
-        font-size: 14px;
-    }
-
-    .responsive-video {
-        max-width: 100%;
-    }
-}
+</body>
+</html>
