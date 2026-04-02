@@ -12,7 +12,7 @@
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
 
-        <h2>Welcome, Admin</h2>
+        <h2>Welcome, <span class="username">Agent</span></h2>
 
         <a href="#">🏠 Dashboard</a>
         <a href="#">📊 Summary Report</a>
@@ -31,14 +31,17 @@
         <a href="/api/logout">🚪 Logout</a>
 
     </div>
-<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Overlay for mobile -->
+    <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+
     <!-- MAIN -->
     <div class="main">
 
         <!-- HEADER -->
         <div class="header">
             <div class="hamburger" onclick="toggleSidebar()">☰</div>
-            <div class="username">Admin</div>
+            <div class="username">Agent</div>
         </div>
 
         <!-- CONTENT -->
@@ -49,7 +52,7 @@
             <!-- Membership Link -->
             <div class="card">
                 <h3>Your Membership Link</h3>
-                <input type="text" value="https://your-site.com/ref=12345" style="width:100%; padding:8px;">
+                <input type="text" value="https://your-site.com/ref=12345" style="width:100%; padding:8px;" readonly>
                 <button onclick="copyLink()">COPY YOUR LINK</button>
             </div>
 
@@ -88,47 +91,70 @@
 
     <!-- JAVASCRIPT -->
     <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
+        // =========================
+        // Session check
+        // =========================
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/dashboard');
+                if (res.status === 401) {
+                    window.location.href = '/'; // redirect to login if not logged in
+                    return;
+                }
+                const data = await res.json();
+                // Update username in sidebar and header
+                document.querySelectorAll('.username').forEach(el => el.textContent = data.username);
+            } catch (err) {
+                console.error(err);
+                window.location.href = '/';
+            }
+        }
+        checkSession();
 
-    if (window.innerWidth <= 768) {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active'); // show overlay
-    } else {
-        sidebar.classList.toggle('collapsed');
-    }
-}
+        // =========================
+        // Hamburger & overlay
+        // =========================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
 
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active'); // show overlay
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
 
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
 
-function copyLink() {
-    const input = document.querySelector('input');
-    input.select();
-    document.execCommand("copy");
-    alert("Link copied!");
-}
-app.get('/api/admin/dashboard', (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
 
-  res.json({
-    username: req.session.user.username
-  });
-});
+        // Close sidebar if click outside (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
+                    closeSidebar();
+                }
+            }
+        });
 
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store');
-  next();
-});
-</script>
+        // =========================
+        // Copy link
+        // =========================
+        function copyLink() {
+            const input = document.querySelector('input');
+            input.select();
+            document.execCommand("copy");
+            alert("Link copied!");
+        }
+    </script>
 
 </body>
 </html>
