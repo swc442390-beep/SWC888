@@ -28,7 +28,7 @@
 
         <div class="category">Settings</div>
         <a href="#">🔑 Change Password</a>
-        <a href="#">🚪 Logout</a>
+        <a href="/api/logout">🚪 Logout</a>
 
     </div>
 <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
@@ -114,6 +114,20 @@ function copyLink() {
     document.execCommand("copy");
     alert("Link copied!");
 }
+app.get('/api/admin/dashboard', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  res.json({
+    username: req.session.user.username
+  });
+});
+
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 </script>
 
 </body>
