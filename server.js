@@ -16,8 +16,8 @@ const app = express();
 // ==========================
 app.use(helmet());
 app.use(cors({
-  origin: allowedOrigin,   // your deployed site
-  credentials: true        // allow cookies
+  origin: allowedOrigin,
+  credentials: true
 }));
 app.use(express.json());
 
@@ -31,14 +31,14 @@ app.use((req, res, next) => {
 // SESSION CONFIG
 // ==========================
 app.use(session({
-  secret: 'secret-key', // change in production
+  secret: 'secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,        // true if HTTPS
+    secure: false,
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 1000 * 60 * 30 // 30 min
+    maxAge: 1000 * 60 * 30
   }
 }));
 
@@ -97,55 +97,11 @@ app.get('/declarator.html', authorizeRoles('declarator'), (req, res) => res.send
 app.get('/player.html', authorizeRoles('player'), (req, res) => res.sendFile(__dirname + '/public/player.html'));
 
 // ==========================
-// DASHBOARD API
-// ==========================
-app.get('/api/dashboard', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const userResult = await pool.query('SELECT points, role FROM users WHERE id=$1', [userId]);
-    const agentsResult = await pool.query('SELECT COUNT(*) FROM users WHERE parent_id=$1 AND role=$2', [userId,'agent']);
-    const playersResult = await pool.query('SELECT COUNT(*) FROM users WHERE parent_id=$1 AND role=$2', [userId,'player']);
-
-    res.json({
-      username: req.session.user.username,
-      points: userResult.rows[0].points,
-      role: userResult.rows[0].role,
-      agentsCount: parseInt(agentsResult.rows[0].count),
-      playersCount: parseInt(playersResult.rows[0].count)
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ==========================
 // LOGOUT
 // ==========================
 app.get('/api/logout', async (req, res) => {
   if (req.session.user) await pool.query('UPDATE users SET status=$1 WHERE id=$2', ['offline', req.session.user.id]);
   req.session.destroy(() => res.redirect('/'));
-});
-
-// ==========================
-// CREATE USER (ADMIN ONLY)
-// ==========================
-app.post('/api/create-user', isAuthenticated, async (req, res) => {
-  const { username, password, role, parent_id } = req.body;
-  if (req.session.user.role !== 'admin') return res.status(403).json({ error: "Forbidden" });
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.query(
-      `INSERT INTO users (username,password,role,parent_id,points,can_withdraw,status)
-       VALUES ($1,$2,$3,$4,0,false,'offline')`,
-      [username, hashedPassword, role, parent_id || null]
-    );
-    res.json({ message: "User created successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error creating user" });
-  }
 });
 
 // ==========================
