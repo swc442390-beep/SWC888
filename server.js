@@ -146,7 +146,8 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 
       res.json({
         message: "Login success",
-        role: user.role
+        role: user.role,
+        id: user.id
       });
     });
 
