@@ -7,9 +7,19 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const pool = require('./db/connection');
 const bcrypt = require('bcrypt');
-
+const rateLimit = require('express-rate-limit');
 const app = express();
 const allowedOrigin = 'https://letsplay-famw.onrender.com';
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // allow max 5 attempts per window per IP
+  message: {
+    error: "Too many login attempts, please try again after 15 minutes"
+  },
+  standardHeaders: true, // return rate limit info in headers
+  legacyHeaders: false,  // disable X-RateLimit-* headers
+});
 
 // ==========================
 // MIDDLEWARE
@@ -78,7 +88,8 @@ function authorizeRoles(...roles) {
 // ==========================
 // LOGIN ROUTE (FIXED)
 // ==========================
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
+  
   const { username, password } = req.body;
 
   try {
