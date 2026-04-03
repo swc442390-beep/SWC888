@@ -9,6 +9,7 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <div id="snackbar"></div>
     <div class="login-container">
         <!-- Logo -->
         <img src="logo.png" alt="Mapagmahal Logo" class="logo">
@@ -55,7 +56,7 @@
             const password = document.getElementById('password').value.trim();
 
             if (!username || !password) {
-                showSnackbar("Please enter both username and password"); // temporary notification
+                showSnackbar("Please enter both username and password", "warning");
                 return;
             }
 
@@ -70,22 +71,26 @@
                 const data = await res.json();
 
                 if (data.error) {
-                    showSnackbar(data.error); // temporary notification
+                    showSnackbar(data.error, "error");
                     return;
                 }
 
                 // Redirect based on role
                 switch(data.role) {
                     case "admin":
+                        showSnackbar("Server error", "error");
                         window.location.href = "admin.html";
                         break;
                     case "player":
+                        showSnackbar("Login successful!", "success");
                         window.location.href = "player.html";
                         break;
                     case "master_agent":
+                        showSnackbar("Login successful!", "success");
                         showSnackbar("Master Agent panel coming next");
                         break;
                     case "declarator":
+                        showSnackbar("Login successful!", "success");
                         showSnackbar("Declarator panel coming next");
                         break;
                     default:
@@ -93,7 +98,7 @@
                 }
 
             } catch (err) {
-                showSnackbar("Server error");
+                showSnackbar("Server error", "error");
                 console.error(err);
             }
         }
