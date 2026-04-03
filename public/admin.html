@@ -41,7 +41,6 @@
         <!-- HEADER -->
         <div class="header">
             <div class="hamburger" onclick="toggleSidebar()">☰</div>
-            <div class="username">Agent</div>
         </div>
 
         <!-- CONTENT -->
@@ -149,7 +148,7 @@
         // Copy link
         // =========================
         function copyLink() {
-            const input = document.querySelector('input');
+            const input = document.querySelector('.card input');
             input.select();
             document.execCommand("copy");
             alert("Link copied!");

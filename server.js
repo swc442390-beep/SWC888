@@ -18,8 +18,17 @@ app.use(session({
   secret: 'secret-key', // Change this in production
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set true only if HTTPS
+  cookie: {
+    secure: false,        // true when using HTTPS
+    httpOnly: true,       // prevents JS access
+    sameSite: 'lax'       // prevents CSRF
+  } // Set true only if HTTPS
 }));
+
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 // ==========================
 // AUTHENTICATION MIDDLEWARE
@@ -29,6 +38,23 @@ function isAuthenticated(req, res, next) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
+}
+
+// ==========================
+// ROLE-BASED AUTHORIZATION
+// ==========================
+function authorizeRoles(...roles) {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!roles.includes(req.session.user.role)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    next();
+  };
 }
 
 // ==========================
@@ -89,11 +115,30 @@ app.post('/api/login', async (req, res) => {
 // ==========================
 // PROTECTED DASHBOARD ROUTE
 // ==========================
-app.get('/admin.html', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/');
-  }
+
+app.get('/admin.html', authorizeRoles('admin'), (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
+});
+
+// ==========================
+// DECLARATOR PAGE
+// ==========================
+app.get('/declarator.html', authorizeRoles('declarator'), (req, res) => {
+  res.sendFile(__dirname + '/public/declarator.html');
+});
+
+// ==========================
+// AGENT PAGE
+// ==========================
+app.get('/agent.html', authorizeRoles('master_agent', 'sub_agent', 'agent'), (req, res) => {
+  res.sendFile(__dirname + '/public/agent.html');
+});
+
+// ==========================
+// PLAYER PAGE
+// ==========================
+app.get('/player.html', authorizeRoles('player'), (req, res) => {
+  res.sendFile(__dirname + '/public/player.html');
 });
 
 // ==========================
@@ -160,11 +205,18 @@ app.use(express.static('public'));
 // ==========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 // ==========================
 // BCRYPT USER CREATION (FOR TESTING PURPOSES ONLY)
 // ==========================
-app.post('/api/create-user', async (req, res) => {
+
+app.post('/api/create-user', isAuthenticated, async (req, res) => {
   const { username, password, role, parent_id } = req.body;
+
+  // ✅ Only ADMIN can create users
+  if (req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: "Forbidden" });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
