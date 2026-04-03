@@ -14,11 +14,11 @@ const app = express();
 // ==========================
 // SECURITY MIDDLEWARE
 // ==========================
-app.use(helmet()); // secure headers
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Prevent caching (important for logout security)
+// Prevent caching (important after logout)
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
@@ -28,13 +28,14 @@ app.use((req, res, next) => {
 // SESSION CONFIG
 // ==========================
 app.use(session({
-  secret: 'secret-key', // change in production
+  secret: 'secret-key', // ⚠️ change in production
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // true if HTTPS
+    secure: false,        // true if HTTPS
     httpOnly: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 30 // 30 minutes session
   }
 }));
 
@@ -42,8 +43,8 @@ app.use(session({
 // RATE LIMITER (ANTI-BRUTE FORCE)
 // ==========================
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  windowMs: 15 * 60 * 1000, // 15 mins
+  max: 5,
   message: { error: "Too many login attempts. Try again later." }
 });
 
@@ -58,21 +59,41 @@ function isAuthenticated(req, res, next) {
 }
 
 // ==========================
-// ROLE-BASED AUTH
+// ROLE AUTHORIZATION
 // ==========================
 function authorizeRoles(...roles) {
   return (req, res, next) => {
     if (!req.session.user) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.redirect('/');
     }
 
     if (!roles.includes(req.session.user.role)) {
-      return res.status(403).json({ error: "Forbidden" });
+      return res.status(403).send("Forbidden");
     }
 
     next();
   };
 }
+
+// ==========================
+// GLOBAL PAGE PROTECTION (🔥 IMPORTANT FIX)
+// ==========================
+app.use((req, res, next) => {
+  const protectedPages = [
+    '/admin.html',
+    '/agent.html',
+    '/declarator.html',
+    '/player.html'
+  ];
+
+  if (protectedPages.includes(req.path)) {
+    if (!req.session.user) {
+      return res.redirect('/');
+    }
+  }
+
+  next();
+});
 
 // ==========================
 // TEST ROUTE
@@ -82,7 +103,7 @@ app.get('/api/test', (req, res) => {
 });
 
 // ==========================
-// LOGIN ROUTE (PROTECTED)
+// LOGIN
 // ==========================
 app.post('/api/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
@@ -135,12 +156,12 @@ app.get('/admin.html', authorizeRoles('admin'), (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
 
-app.get('/declarator.html', authorizeRoles('declarator'), (req, res) => {
-  res.sendFile(__dirname + '/public/declarator.html');
-});
-
 app.get('/agent.html', authorizeRoles('master_agent', 'sub_agent', 'agent'), (req, res) => {
   res.sendFile(__dirname + '/public/agent.html');
+});
+
+app.get('/declarator.html', authorizeRoles('declarator'), (req, res) => {
+  res.sendFile(__dirname + '/public/declarator.html');
 });
 
 app.get('/player.html', authorizeRoles('player'), (req, res) => {
@@ -228,9 +249,15 @@ app.post('/api/create-user', isAuthenticated, async (req, res) => {
 });
 
 // ==========================
-// STATIC FILES
+// STATIC FILES (FIXED)
 // ==========================
-app.use(express.static('public'));
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+  }
+}));
 
 // ==========================
 // START SERVER
