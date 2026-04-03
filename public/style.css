@@ -257,3 +257,55 @@ footer {
         width: 100%;
     }
 }
+
+/* ==========================
+   SNACKBAR (TOAST)
+========================== */
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    max-width: 300px;
+    background: #1e293b;
+    color: #e2e8f0;
+    text-align: center;
+    border-radius: 8px;
+    padding: 14px;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 14px;
+    border-left: 5px solid #14b8a6; /* default teal */
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+/* Show animation */
+#snackbar.show {
+    visibility: visible;
+    animation: fadein 0.3s, fadeout 0.3s 2.7s;
+}
+
+/* Variants */
+#snackbar.success {
+    border-left-color: #14b8a6;
+}
+
+#snackbar.error {
+    border-left-color: #ef4444;
+}
+
+#snackbar.warning {
+    border-left-color: #f59e0b;
+}
+
+/* Animations */
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px; opacity: 1; }
+}
+
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
