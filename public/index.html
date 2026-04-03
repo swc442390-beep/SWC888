@@ -9,8 +9,6 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div id="snackbar"></div>
-
     <div class="login-container">
         <!-- Logo -->
         <img src="logo.png" alt="Mapagmahal Logo" class="logo">
@@ -41,23 +39,13 @@
     </div>
 
     <script>
-        // Show snackbar notification
-        function showSnackbar(message, type = 'warning') {
-            const bar = document.getElementById("snackbar");
-            bar.textContent = message;
-            bar.className = 'show ' + (type === 'success' ? 'success' : '');
-            setTimeout(() => {
-                bar.className = bar.className.replace('show', '').replace('success', '');
-            }, 3000);
-        }
-
         // Login function
         async function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
 
             if (!username || !password) {
-                showSnackbar("Please enter both username and password");
+                alert("Please enter both username and password"); // temporary notification
                 return;
             }
 
@@ -72,32 +60,30 @@
                 const data = await res.json();
 
                 if (data.error) {
-                    showSnackbar(data.error);
+                    alert(data.error); // temporary notification
                     return;
                 }
 
                 // Redirect based on role
                 switch(data.role) {
                     case "admin":
-                        showSnackbar("Login successful!", 'success');
-                        setTimeout(() => window.location.href = "admin.html", 800);
+                        window.location.href = "admin.html";
                         break;
                     case "player":
-                        showSnackbar("Login successful!", 'success');
-                        setTimeout(() => window.location.href = "player.html", 800);
+                        window.location.href = "player.html";
                         break;
                     case "master_agent":
-                        showSnackbar("Master Agent panel coming next");
+                        alert("Master Agent panel coming next");
                         break;
                     case "declarator":
-                        showSnackbar("Declarator panel coming next");
+                        alert("Declarator panel coming next");
                         break;
                     default:
-                        showSnackbar("Unknown role");
+                        alert("Unknown role");
                 }
 
             } catch (err) {
-                showSnackbar("Server error");
+                alert("Server error");
                 console.error(err);
             }
         }
