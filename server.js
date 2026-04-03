@@ -6,8 +6,8 @@ const cors = require('cors');
 const session = require('express-session');
 const pool = require('./db/connection');
 const bcrypt = require('bcrypt');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+
 const allowedOrigin = 'https://letsplay-famw.onrender.com';
 const app = express();
 
@@ -16,8 +16,8 @@ const app = express();
 // ==========================
 app.use(helmet());
 app.use(cors({
-  origin: allowedOrigin,   // ✅ your deployed site
-  credentials: true        // ✅ allow cookies to be sent
+  origin: allowedOrigin,   // your deployed site
+  credentials: true        // allow cookies
 }));
 app.use(express.json());
 
@@ -35,21 +35,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,        // true if using HTTPS
+    secure: false,        // true if HTTPS
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 1000 * 60 * 30 // 30 min
   }
 }));
-
-// ==========================
-// RATE LIMITER (ANTI-BRUTE FORCE)
-// ==========================
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { error: "Too many login attempts. Try again later." }
-});
 
 // ==========================
 // AUTH MIDDLEWARE
@@ -71,20 +62,13 @@ function authorizeRoles(...roles) {
 }
 
 // ==========================
-// TEST ROUTE
+// LOGIN ROUTE
 // ==========================
-app.get('/api/test', (req, res) => {
-  res.json({ message: "Server working" });
-});
-
-// ==========================
-// LOGIN
-// ==========================
-app.post('/api/login', loginLimiter, async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    const result = await pool.query('SELECT * FROM users WHERE username=$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: "User not found" });
 
     const user = result.rows[0];
@@ -95,7 +79,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
     req.session.user = { id: user.id, username: user.username, role: user.role };
 
     // Update status
-    await pool.query('UPDATE users SET status = $1 WHERE id = $2', ['online', user.id]);
+    await pool.query('UPDATE users SET status=$1 WHERE id=$2', ['online', user.id]);
 
     res.json({ message: "Login success", role: user.role });
   } catch (err) {
@@ -167,7 +151,11 @@ app.post('/api/create-user', isAuthenticated, async (req, res) => {
 // ==========================
 // STATIC FILES
 // ==========================
-app.use(express.static('public', { setHeaders: (res, path) => { if(path.endsWith('.html')) res.setHeader('Cache-Control','no-store'); }}));
+app.use(express.static('public', { 
+  setHeaders: (res, path) => { 
+    if(path.endsWith('.html')) res.setHeader('Cache-Control','no-store'); 
+  }
+}));
 
 // ==========================
 // START SERVER
