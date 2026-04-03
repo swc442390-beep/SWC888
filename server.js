@@ -229,3 +229,45 @@ app.get('/api/dashboard', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// ==========================
+// SIGNUP ROUTE (NEW)
+// ==========================
+
+app.post('/api/signup', async (req, res) => {
+  const { username, password, parent_id } = req.body;
+
+  try {
+    // Check if username exists
+    const check = await pool.query(
+      'SELECT * FROM users WHERE username=$1',
+      [username]
+    );
+
+    if (check.rows.length > 0) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    // Hash password
+    const hashed = await bcrypt.hash(password, 10);
+
+    // Insert user
+    await pool.query(`
+      INSERT INTO users 
+      (username, password, role, parent_id, status, failed_logins)
+      VALUES ($1, $2, $3, $4, $5, 0)
+    `, [
+      username,
+      hashed,
+      'player',               // default role
+      parent_id || null,
+      'pending'               // 🔥 requires approval
+    ]);
+
+    res.json({ message: "User created" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});

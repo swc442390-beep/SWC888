@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="snackbar"></div>
+
+<div class="login-container">
+    <h1>Create Account</h1>
+
+    <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="username">
+    </div>
+
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password">
+    </div>
+
+    <button onclick="signup()">Register</button>
+    <button onclick="signup()">Register</button>
+
+    <p class="login-link">
+        Already have an account? 
+        <a href="/">Login here</a>
+    </p>
+</div>
+
+<script>
+function showSnackbar(message, type = "success") {
+    const bar = document.getElementById("snackbar");
+    bar.textContent = message;
+    bar.className = "show " + type;
+
+    setTimeout(() => {
+        bar.className = bar.className.replace("show", "").trim();
+    }, 3000);
+}
+
+// GET REFERRAL ID FROM URL
+function getRef() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("ref");
+}
+
+async function signup() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const parent_id = getRef();
+
+    if (!username || !password) {
+        showSnackbar("Fill all fields", "warning");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, parent_id })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+            showSnackbar(data.error, "error");
+            return;
+        }
+
+        showSnackbar("Account created! Waiting for approval", "success");
+
+    } catch (err) {
+        console.error(err);
+        showSnackbar("Server error", "error");
+    }
+}
+</script>
+
+</body>
+</html>

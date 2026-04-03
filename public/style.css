@@ -367,3 +367,24 @@ footer {
 
 #snackbar.error { border-left-color: #ef4444; }
 #snackbar.warning { border-left-color: #f59e0b; }
+
+/* ==========================
+   LOGIN LINK (SIGNUP PAGE)
+========================== */
+.login-link {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.login-link a {
+    color: #14b8a6;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
