@@ -223,6 +223,7 @@ app.get('/api/dashboard', isAuthenticated, async (req, res) => {
     res.json({
       username: result.rows[0].username,
       role: result.rows[0].role
+      id: result.rows[0].id
     });
 
   } catch (err) {

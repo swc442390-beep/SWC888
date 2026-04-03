@@ -53,7 +53,7 @@
                     <div class="card-content">
                         <h3>Your Membership Link</h3>
                         <div class="link-wrapper">
-                            <input class="membership-link" type="text" value="https://letsplay-famw.onrender.com/sign-up.html?ref=4" readonly>
+                            <input class="membership-link" type="text" value="" readonly>
                         </div>
                         <button onclick="copyLink()">COPY</button>
                     </div>
@@ -154,7 +154,10 @@
 
                 document.querySelectorAll('.username')
                     .forEach(el => el.textContent = data.username);
-
+                const membershipInput = document.querySelector('.membership-link');
+                if (membershipInput) {
+                    membershipInput.value = `https://letsplay-famw.onrender.com/sign-up.html?ref=${data.id}`;
+                }
             } catch (err) {
                 console.error(err);
                 window.location.href = '/';
@@ -202,6 +205,7 @@
         function copyLink() {
             const input = document.querySelector('.card input');
             input.select();
+            input.setSelectionRange(0, 99999); // For mobile
             document.execCommand("copy");
             alert("Link copied!");
         }
