@@ -2,31 +2,31 @@
    RESET & BASE
 ========================== */
 * {
-    box-sizing: border-box; /* important for input sizing */
+    box-sizing: border-box;
 }
 
 body {
-    margin: 0;
+    margin: 0;  
     font-family: Arial, sans-serif;
-    background: #1e1e1e; /* dark gray */
-    color: #f5f5f5;
+    background: #0f2a33;       /* dark teal background */
+    color: #e0f7fa;            /* light text */
     text-align: center;
 }
 
 /* ==========================
-   LOGIN CONTAINER AS MESSAGE BOX
+   LOGIN CONTAINER
 ========================== */
 .login-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 40px 30px;
-    background-color: #2b2b2b;           /* dark box */
-    border: 2px solid #ff4d4d;           /* red border */
+    background-color: #064055;           /* darker teal box */
+    border: 2px solid #00bcd4;           /* bright teal border */
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); /* subtle glow */
-    max-width: 360px;                    /* fixed box width */
-    margin: 80px auto;                   /* center on page */
+    box-shadow: 0 0 20px rgba(0, 188, 212, 0.3); /* subtle glow */
+    max-width: 360px;
+    margin: 80px auto;
 }
 
 /* Logo */
@@ -38,7 +38,7 @@ body {
 /* Site Title */
 h1 {
     margin: 10px 0 30px 0;
-    color: #ff4d4d;
+    color: #00bcd4;   /* bright teal heading */
     font-size: 28px;
 }
 
@@ -54,10 +54,9 @@ h1 {
 .input-group label {
     display: block;
     margin-bottom: 5px;
-    color: #aaa;
+    color: #a0dce0; /* light teal label */
 }
 
-/* Input with icon */
 .input-icon {
     position: relative;
 }
@@ -67,21 +66,21 @@ h1 {
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    color: #aaa;
+    color: #a0dce0;
 }
 
 .input-icon input {
-    width: 100%;                   /* fill container */
-    padding: 12px 12px 12px 36px; /* left padding for icon */
-    border: 1px solid #555;
+    width: 100%;
+    padding: 12px 12px 12px 36px;
+    border: 1px solid #007c91;  /* teal border */
     border-radius: 6px;
-    background-color: #2b2b2b;
-    color: #f5f5f5;
+    background-color: #064055;
+    color: #e0f7fa;
     font-size: 16px;
 }
 
 input::placeholder {
-    color: #777;
+    color: #77c7d8;
 }
 
 /* ==========================
@@ -91,7 +90,7 @@ button {
     width: 100%;
     padding: 12px;
     margin-top: 12px;
-    background-color: #ff4d4d;
+    background-color: #00bcd4;
     color: white;
     border: none;
     border-radius: 6px;
@@ -101,7 +100,7 @@ button {
 }
 
 button:hover {
-    background-color: #e60000;
+    background-color: #0097a7;
 }
 
 /* ==========================
@@ -109,7 +108,7 @@ button:hover {
 ========================== */
 @media (max-width: 600px) {
     .login-container {
-        margin: 50px 20px; /* smaller margins */
+        margin: 50px 20px;
         padding: 30px 20px;
     }
 
@@ -123,23 +122,8 @@ button:hover {
 }
 
 /* ==========================
-   RESPONSIVE VIDEO (future use)
-========================== */
-.responsive-video {
-    width: 100%;
-    max-width: 800px;
-    aspect-ratio: 16/9;
-    border: 0;
-    margin: 20px auto;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-}
-
-/* ==========================
    ADMIN / DASHBOARD LAYOUT
 ========================== */
-
-/* Layout */
 .dashboard-body {
     display: flex;
     margin: 0;
@@ -150,8 +134,8 @@ button:hover {
 ========================== */
 .sidebar {
     width: 250px;
-    background: #2b2b2b;
-    color: #fff;
+    background: #064055;
+    color: #e0f7fa;
     height: 100vh;
     transition: 0.3s;
     overflow-y: auto;
@@ -164,32 +148,29 @@ button:hover {
 .sidebar h2 {
     padding: 20px;
     font-size: 18px;
-    border-bottom: 1px solid #444;
-    color: #ff4d4d;
+    border-bottom: 1px solid #007c91;
+    color: #00bcd4;
 }
 
-/* Links */
 .sidebar a {
     display: block;
     padding: 12px 20px;
     text-decoration: none;
-    color: #ddd;
-    text-align: left;   /* ✅ FIX */
+    color: #b2ebf2;
+    text-align: left;
 }
 
 .sidebar a:hover {
-    background: #444;
+    background: #007c91;
 }
 
-/* Category label */
 .sidebar .category {
     padding: 10px 20px;
-    color: gold;
+    color: #80deea;
     font-weight: bold;
     font-size: 13px;
 }
 
-/* Collapse behavior */
 .sidebar.collapsed a,
 .sidebar.collapsed .category,
 .sidebar.collapsed h2 {
@@ -206,14 +187,13 @@ button:hover {
     flex-direction: column;
 }
 
-/* Header */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #1e1e1e;
+    background: #0f2a33;
     padding: 10px 20px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #007c91;
 }
 
 .hamburger {
@@ -225,15 +205,13 @@ button:hover {
     font-weight: bold;
 }
 
-/* Content */
 .content {
     padding: 20px;
 }
 
-/* Cards */
 .card {
-    background: #2b2b2b;
-    border: 1px solid #ff4d4d;
+    background: #064055;
+    border: 1px solid #00bcd4;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
@@ -241,51 +219,69 @@ button:hover {
 
 .card h3 {
     margin-top: 0;
-    color: #ff4d4d;
+    color: #00bcd4;
 }
 
-/* Footer */
 footer {
     margin-top: auto;
     text-align: center;
     padding: 10px;
-    color: #aaa;
-    border-top: 1px solid #444;
+    color: #a0dce0;
+    border-top: 1px solid #007c91;
 }
+
+/* ==========================
+   OVERLAY
+========================== */
 .overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5); /* dark transparent */
+    background: rgba(0,0,0,0.5);
     display: none;
     z-index: 900;
 }
 
-/* Show overlay */
 .overlay.active {
     display: block;
 }
+
 /* ==========================
-   MOBILE
+   SNACKBAR
 ========================== */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: -250px;
-        top: 0;
-        z-index: 1000;
-    }
-
-    .sidebar.active {
-        left: 0;
-    }
-
-    .main {
-        width: 100%;
-    }
-    /* Overlay for mobile */
-
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #007c91; /* teal for warning */
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 12px;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 14px;
 }
 
+#snackbar.success {
+    background-color: #00bcd4; /* bright teal for success */
+}
+
+#snackbar.show {
+    visibility: visible;
+    animation: fadein 0.3s, fadeout 0.3s 2.5s;
+}
+
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px; opacity: 1; }
+}
+
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
