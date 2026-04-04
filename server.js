@@ -103,7 +103,17 @@ app.post('/api/login', loginLimiter, async (req, res) => {
     }
 
     const user = result.rows[0];
-
+    // ❌ BLOCK PENDING USERS
+    if (user.status === 'pending') {
+      return res.status(403).json({ 
+        error: "Account pending approval. Please wait for approval." 
+      });
+    }
+    if (user.status === 'suspended') {
+      return res.status(403).json({ 
+        error: "Your account has been suspended." 
+      });
+    }
     // Check if account is locked
     if (user.lock_until && new Date() < user.lock_until) {
       const minutesLeft = Math.ceil((new Date(user.lock_until) - new Date()) / 60000);
