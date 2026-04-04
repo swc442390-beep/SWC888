@@ -274,3 +274,25 @@ app.post('/api/signup', async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// ==========================
+// PENDING COUNT API
+// ==========================
+app.get('/api/pending-count', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    const result = await pool.query(
+      'SELECT COUNT(*) FROM users WHERE parent_id = $1 AND status = $2',
+      [userId, 'pending']
+    );
+
+    res.json({
+      count: parseInt(result.rows[0].count)
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});

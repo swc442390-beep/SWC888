@@ -24,7 +24,9 @@
         <div class="category">Downlines</div>
         <a href="#">👥 Agents</a>
         <a href="#">🧑 Players</a>
-        <a href="#">⏳ Pending Approvals</a>
+        <a href="#">⏳ Pending Approvals 
+            <span id="pendingBadge" class="badge red" style="display:none;">0</span>
+        </a>
 
         <div class="category">Settings</div>
         <a href="#">🔑 Change Password</a>
@@ -162,6 +164,8 @@
                 console.error(err);
                 window.location.href = '/';
             }
+            loadPendingCount();
+            setInterval(loadPendingCount, 10000); // every 10 sec
         }
         checkSession();
 
@@ -208,6 +212,27 @@
             input.setSelectionRange(0, 99999); // For mobile
             document.execCommand("copy");
             alert("Link copied!");
+        }
+        async function loadPendingCount() {
+            try {
+                const res = await fetch('/api/pending-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('pendingBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
         }
     </script>
 

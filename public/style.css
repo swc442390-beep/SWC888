@@ -388,3 +388,9 @@ footer {
 .login-link a:hover {
     text-decoration: underline;
 }
+
+#pendingBadge {
+    margin-left: 8px;
+    font-size: 11px;
+    padding: 3px 7px;
+}
