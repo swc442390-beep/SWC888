@@ -326,3 +326,29 @@ app.get('/api/pending-count', isAuthenticated, async (req, res) => {
   }
 });
 
+// ==========================
+// wallet CONTROLLER
+// ==========================
+const { addTransaction, getBalance, getTransactions } = require('./controllers/wallet');
+
+// Example API using the imported functions
+app.get('/api/wallet/:userId', isAuthenticated, async (req, res) => {
+    try {
+        const balance = await getBalance(req.params.userId);
+        if (balance === null) return res.status(404).json({ error: "User not found" });
+        res.json({ balance });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.get('/api/wallet/:userId/transactions', isAuthenticated, async (req, res) => {
+    try {
+        const transactions = await getTransactions(req.params.userId);
+        res.json(transactions);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
