@@ -662,3 +662,32 @@ app.post('/api/reset-password', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// ==========================
+// AGENTS LIST API
+// ==========================
+app.get('/api/agents', isAuthenticated, async (req, res) => {
+  try {
+    const currentUserId = req.session.user.id;
+
+    const result = await pool.query(`
+      SELECT 
+        u.id,
+        u.username,
+        u.role,
+        u.points,
+        u.status,
+        u.parent_id,
+        p.username AS parent_username
+      FROM users u
+      LEFT JOIN users p ON u.parent_id = p.id
+      WHERE u.role IN ('master_agent', 'sub_agent', 'agent')
+      AND u.status NOT IN ('pending', 'rejected')
+    `);
+
+    res.json(result.rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});

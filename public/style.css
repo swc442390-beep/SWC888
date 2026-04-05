@@ -78,22 +78,31 @@ input::placeholder {
     color: #64748b;
 }
 
+.input-icon input:focus {
+    border-color: #14b8a6;
+    outline: none;
+    box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+}
+
 /* ==========================
-   BUTTON
+   BUTTONS
 ========================== */
 button {
-    width: 100%;
     padding: 12px;
-    margin-top: 12px;
-    background: linear-gradient(135deg, #14b8a6, #0ea5e9);
     border: none;
     border-radius: 6px;
-    color: white;
     cursor: pointer;
+    background: linear-gradient(135deg, #14b8a6, #0ea5e9);
+    color: white;
+    transition: 0.2s;
 }
 
 button:hover {
     opacity: 0.9;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 /* ==========================
@@ -106,9 +115,6 @@ button:hover {
 /* ==========================
    SIDEBAR
 ========================== */
-/* ==========================
-   SIDEBAR (FULL FIXED)
-========================== */
 .sidebar {
     width: 250px;
     background: #1e293b;
@@ -119,7 +125,6 @@ button:hover {
     position: relative;
 }
 
-/* COLLAPSED (DESKTOP) */
 .sidebar.collapsed {
     width: 70px;
 }
@@ -131,7 +136,6 @@ button:hover {
     padding-left: 10px;
 }
 
-/* TITLE */
 .sidebar h2 {
     padding: 20px;
     font-size: 18px;
@@ -139,7 +143,6 @@ button:hover {
     color: #14b8a6;
 }
 
-/* LINKS */
 .sidebar a {
     display: block;
     padding: 12px 20px;
@@ -153,7 +156,6 @@ button:hover {
     background: #0f172a;
 }
 
-/* CATEGORY */
 .sidebar .category {
     padding: 10px 20px;
     color: #0ea5e9;
@@ -162,7 +164,7 @@ button:hover {
 }
 
 /* ==========================
-   OVERLAY (MOBILE)
+   MOBILE SIDEBAR & OVERLAY
 ========================== */
 .overlay {
     position: fixed;
@@ -179,9 +181,6 @@ button:hover {
     display: block;
 }
 
-/* ==========================
-   MOBILE SIDEBAR
-========================== */
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;
@@ -198,6 +197,7 @@ button:hover {
         width: 100%;
     }
 }
+
 /* ==========================
    MAIN
 ========================== */
@@ -218,80 +218,97 @@ button:hover {
 }
 
 /* ==========================
-   MEMBERSHIP CARD
+   TABLES
 ========================== */
-.membership-card {
-    display: block; /* ✅ stack content vertically */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+}
+
+th {
+    background: #0f172a;
+    color: #14b8a6;
+}
+
+tr:nth-child(even) {
+    background: #111827;
+}
+
+/* ==========================
+   STATUS COLORS
+========================== */
+.status.online { color: #2ecc71; }
+.status.offline { color: #94a3b8; }
+.status.suspended { color: #e74c3c; }
+
+/* ==========================
+   ACTION BUTTONS
+========================== */
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn.add { background: #14b8a6; }
+.btn.suspend { background: #e74c3c; }
+.btn.activate { background: #2ecc71; }
+.btn.reset { background: #f1c40f; color: black; }
+
+.btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ==========================
+   MODALS
+========================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
     background: #1e293b;
     padding: 20px;
     border-radius: 12px;
-    margin-bottom: 20px;
-    width: 100%;
+    width: 300px;
 }
 
-/* Wrapper = vertical stack */
-.link-wrapper {
-    display: flex;
-    flex-direction: column; /* ✅ STACK input + button */
-    gap: 10px;
+.modal-content input {
     width: 100%;
-    margin-top: 10px;
-}
-
-/* INPUT full width */
-.membership-link {
-    width: 100%;
-    padding: 12px;
+    padding: 10px;
+    margin: 10px 0;
     border-radius: 6px;
-    border: none;
-}
-
-/* BUTTON full width */
-.link-wrapper button {
-    width: 100%; /* ✅ FULL WIDTH */
-    padding: 12px;
-}
-
-/* ==========================
-   CARDS GRID
-========================== */
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* desktop: 2 rows */
-    gap: 20px;
-}
-
-/* MOBILE: single column */
-@media (max-width: 768px) {
-    .cards-container {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ==========================
-   CARD
-========================== */
-.card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-radius: 12px;
+    border: 1px solid #334155;
+    background: #0f172a;
     color: white;
-}
-
-.card-content {
-    text-align: left;
-    width: 100%;
-}
-
-.card-icon {
-    margin-left: 20px;
-}
-
-.amount {
-    font-size: 22px;
-    font-weight: bold;
 }
 
 /* ==========================
@@ -305,36 +322,8 @@ button:hover {
     margin-top: 8px;
 }
 
-.badge.blue {
-    background: #3498db;
-}
-
-.badge.red {
-    background: #e74c3c;
-}
-
-/* ==========================
-   COMMISSION
-========================== */
-.rate-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.rate-box {
-    background: #2ecc71;
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-
-/* ==========================
-   COLORS
-========================== */
-.wallet-card { background: #e74c3c; }
-.commission-card { background: #3498db; }
-.agents-card { background: #2ecc71; }
-.players-card { background: #f1c40f; color: #000; }
+.badge.blue { background: #3498db; }
+.badge.red { background: #e74c3c; }
 
 /* ==========================
    FOOTER
@@ -373,32 +362,48 @@ footer {
 #snackbar.warning { border-left-color: #f59e0b; }
 
 /* ==========================
-   LOGIN LINK (SIGNUP PAGE)
+   MOBILE RESPONSIVENESS
 ========================== */
-.login-link {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #94a3b8;
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 20px;
+        margin: 40px 15px;
+    }
+
+    .logo {
+        width: 60px;
+        margin-bottom: 15px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
 }
 
-.login-link a {
-    color: #14b8a6;
-    text-decoration: none;
-    font-weight: bold;
-    display: inline-block;
-    margin-top: 5px;
+/* ==========================
+   SELECTS & FILTERS
+========================== */
+.styled-select {
+    padding: 10px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
 }
 
-.login-link a:hover {
-    text-decoration: underline;
+/* ==========================
+   HAMBURGER
+========================== */
+.hamburger {
+    font-size: 22px;
+    cursor: pointer;
+    color: #e2e8f0;
 }
 
-#pendingBadge {
-    margin-left: 8px;
-    font-size: 11px;
-    padding: 3px 7px;
-}
-
+/* ==========================
+   UTILITY
+========================== */
 .toggle-password {
     position: absolute;
     right: 12px;
@@ -417,148 +422,4 @@ footer {
     font-size: 14px;
     color: #94a3b8;
     margin-bottom: 20px;
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-@media (max-width: 480px) {
-    .login-container {
-        padding: 30px 20px;
-        margin: 40px 15px;
-    }
-
-    .logo {
-        width: 60px;
-        margin-bottom: 15px;
-    }
-
-    h1 {
-        font-size: 22px;
-        margin-bottom: 20px;
-    }
-}
-
-.input-icon input:focus {
-    border-color: #14b8a6;
-    outline: none;
-    box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
-}
-
-.pending-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.pending-table th,
-.pending-table td {
-    padding: 12px;
-    border-bottom: 1px solid #334155;
-    text-align: left;
-}
-
-.pending-table th {
-    color: #14b8a6;
-}
-
-.pending-table select {
-    padding: 6px;
-    border-radius: 6px;
-    background: #0f172a;
-    color: white;
-    border: 1px solid #334155;
-}
-
-.pending-table button {
-    padding: 6px 10px;
-    margin-right: 5px;
-    width: auto;
-}
-
-@media (max-width: 768px) {
-    .pending-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
-/* FILTER */
-.filter-bar {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.styled-select {
-    padding: 10px;
-    border-radius: 6px;
-    background: #0f172a;
-    color: #e2e8f0;
-    border: 1px solid #334155;
-}
-
-/* TABLE */
-.table-wrapper {
-    overflow-x: auto;
-}
-
-.styled-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.styled-table th, .styled-table td {
-    padding: 12px;
-    border-bottom: 1px solid #334155;
-    text-align: left;
-}
-
-/* STATUS COLORS */
-.status.online { color: #2ecc71; }
-.status.offline { color: #94a3b8; }
-.status.suspended { color: #e74c3c; }
-
-/* BUTTONS */
-.actions {
-    display: flex;
-    gap: 6px;
-}
-
-.btn {
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.btn.add { background: #2ecc71; }
-.btn.suspend { background: #e74c3c; }
-.btn.activate { background: #3498db; }
-.btn.reset { background: #f1c40f; color: black; }
-
-.btn.disabled {
-    opacity: 0.4;
-    pointer-events: none;
-}
-
-/* MODAL */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: #1e293b;
-    padding: 20px;
-    border-radius: 12px;
-    width: 300px;
 }

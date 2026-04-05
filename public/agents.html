@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Management - Pitwarriors619/title>
+    <title>Players Management - Pitwarriors619</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -42,9 +42,43 @@
             <div class="hamburger" onclick="toggleSidebar()">☰</div>
         </div>
 
-        <div class="content">
-            <h2>Agents List</h2>
-            <p>Coming soon...</p>
+        <h2>Agents Management</h2>
+
+        <select id="roleFilter" onchange="loadAgents()" class="membership-link">
+            <option value="">All Roles</option>
+            <option value="master_agent">Incorporator</option>
+            <option value="sub_agent">Master Agent</option>
+            <option value="agent">Gold Agent</option>
+        </select>
+
+        <select id="statusFilter" onchange="loadAgents()" class="membership-link">
+            <option value="">All Status</option>
+            <option value="online">Active</option>
+            <option value="offline">Offline</option>
+            <option value="suspended">Suspended</option>
+        </select>
+        <div id="pointsModal" class="modal">
+            <div class="modal-content">
+                <h3>Add Points</h3>
+                <input type="number" id="pointsInput" placeholder="Enter amount">
+                <button onclick="confirmAddPoints()">Confirm</button>
+                <button onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Points</th>
+                        <th>Parent</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="agentsTable"></tbody>
+            </table>
         </div>
 
         <footer>
@@ -74,13 +108,290 @@
                 console.error(err);
                 window.location.href = '/';
             }
+            loadPendingCount();
+            setInterval(loadPendingCount, 10000);
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         }
+        // =========================
+        // Hamburger & overlay
+        // =========================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
 
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active'); // show overlay
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        // =========================
+        // Load pending approvals count
+        // =========================
+        async function loadPendingCount() {
+            try {
+                const res = await fetch('/api/pending-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('pendingBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Close sidebar if click outside (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
+                    closeSidebar();
+                }
+            }
+        });
+        
+        function showSnackbar(message, success = false) {
+            const snackbar = document.getElementById("snackbar");
+            snackbar.textContent = message;
+            snackbar.className = success ? "show success" : "show";
+
+            setTimeout(() => {
+                snackbar.className = snackbar.className.replace("show", "");
+            }, 3000);
+        }
+
+        // =========================
+        // Loading players
+        // =========================
+        let selectedUserId = null;
+        let currentUserId = null;
+
+        async function loadPlayers() {
+            try {
+                const session = await fetch('/api/dashboard', { credentials: 'include' });
+                const user = await session.json();
+                currentUserId = user.id;
+
+                const res = await fetch('/api/players', { credentials: 'include' });
+                let players = await res.json();
+
+                const filter = document.getElementById('statusFilter').value;
+                if (filter) {
+                    players = players.filter(p => p.status === filter);
+                }
+
+                const table = document.getElementById('playersTable');
+                table.innerHTML = '';
+
+                players.forEach(p => {
+
+                    const isDirect = Number(p.parent_id) === Number(currentUserId);
+
+                    const row = document.createElement('tr');
+                    console.log("Player parent:", p.parent_id, "Current user:", currentUserId);
+                    row.innerHTML = `
+                        <td>${p.username}</td>
+                        <td>${p.points}</td>
+                        <td>${p.parent_username || '-'}</td>
+                        <td class="status ${p.status}">${p.status}</td>
+                        <td class="actions">
+
+                            <button class="btn add ${!isDirect ? 'disabled' : ''}" 
+                                onclick="${isDirect ? `openModal(${p.id})` : ''}">
+                                ➕
+                            </button>
+
+                            <button class="btn ${p.status === 'suspended' ? 'activate' : 'suspend'}"
+                                onclick="toggleStatus(${p.id}, '${p.status}')">
+                                ${p.status === 'suspended' ? '✅' : '⛔'}
+                            </button>
+
+                            <button class="btn reset" onclick="resetPassword(${p.id})">
+                                🔑
+                            </button>
+
+                        </td>
+                    `;
+
+                    table.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        
+        // =========================
+        // Toggle status
+        // =========================
+        async function toggleStatus(userId, currentStatus) {
+            const newStatus = currentStatus === 'suspended' ? 'offline' : 'suspended';
+
+            await fetch('/api/update-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userId, status: newStatus })
+            });
+
+            showSnackbar("Status updated");
+            loadPlayers();
+        }
+        // =========================
+        // Reset password
+        // =========================
+        async function resetPassword(userId) {
+            if (!confirm("Reset password to 123456?")) return;
+
+            const res = await fetch('/api/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userId })
+            });
+
+            const data = await res.json();
+
+            showSnackbar(data.message);
+        }
+        // =========================
+        // Loading points modal
+        // =========================
+        function openModal(userId) {
+            selectedUserId = userId;
+            document.getElementById('pointsModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('pointsModal').style.display = 'none';
+        }
+
+        async function confirmAddPoints() {
+            const amount = document.getElementById('pointsInput').value;
+
+            if (!amount || amount <= 0) {
+                showSnackbar("Invalid amount");
+                return;
+            }
+
+            const res = await fetch('/api/add-points', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: selectedUserId,
+                    amount: Number(amount)
+                })
+            });
+
+            const data = await res.json();
+
+            // ✅ HANDLE ERROR FROM SERVER
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            // ✅ SUCCESS
+            showSnackbar(data.message, true);
+
+            closeModal();
+            loadPlayers();
+        }
+        async function loadAgents() {
+            try {
+                const session = await fetch('/api/dashboard', { credentials: 'include' });
+                const user = await session.json();
+                currentUserId = user.id;
+
+                const res = await fetch('/api/agents', { credentials: 'include' });
+                let agents = await res.json();
+
+                const roleFilter = document.getElementById('roleFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+
+                if (roleFilter) {
+                    agents = agents.filter(a => a.role === roleFilter);
+                }
+
+                if (statusFilter) {
+                    agents = agents.filter(a => a.status === statusFilter);
+                }
+
+                const table = document.getElementById('agentsTable');
+                table.innerHTML = '';
+
+                agents.forEach(a => {
+
+                    const isDirect = Number(a.parent_id) === Number(currentUserId);
+
+                    const roleName =
+                        a.role === 'master_agent' ? 'Incorporator' :
+                        a.role === 'sub_agent' ? 'Master Agent' :
+                        'Gold Agent';
+
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${a.username}</td>
+                        <td>${roleName}</td>
+                        <td>${a.points}</td>
+                        <td>${a.parent_username || '-'}</td>
+                        <td class="status ${a.status}">${a.status}</td>
+
+                        <td class="actions">
+
+                            <!-- ADD POINTS -->
+                            <button class="btn add ${!isDirect ? 'disabled' : ''}"
+                                onclick="${isDirect ? `openModal(${a.id})` : ''}">
+                                ➕
+                            </button>
+
+                            <!-- SUSPEND / ACTIVATE -->
+                            <button class="btn ${a.status === 'suspended' ? 'activate' : 'suspend'}"
+                                onclick="toggleStatus(${a.id}, '${a.status}')">
+                                ${a.status === 'suspended' ? '✅' : '⛔'}
+                            </button>
+
+                            <!-- RESET PASSWORD -->
+                            <button class="btn reset" onclick="resetPassword(${a.id})">
+                                🔑
+                            </button>
+
+                        </td>
+                    `;
+
+                    table.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
         checkSession();
     </script>
 
