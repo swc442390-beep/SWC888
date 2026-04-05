@@ -69,8 +69,8 @@
                                 <th>Username</th>
                                 <th>Role</th>
                                 <th>Points</th>
-                                <th>Parent</th>
-                                <th>Status</th>
+                                <th>Commission Rate</th>
+                                <th>Commission Earnings</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -189,7 +189,7 @@
                 snackbar.className = snackbar.className.replace("show", "");
             }, 3000);
         }
-
+        
         // =========================
         // Loading players
         // =========================
@@ -332,7 +332,8 @@
             try {
                 const session = await fetch('/api/dashboard', { credentials: 'include' });
                 const user = await session.json();
-                currentUserId = user.id;
+                const currentUserId = user.id;
+                const currentUserRole = user.role;
 
                 const res = await fetch('/api/agents', { credentials: 'include' });
                 let agents = await res.json();
@@ -355,37 +356,32 @@
 
                     const isDirect = Number(a.parent_id) === Number(currentUserId);
 
-                    const roleName =
-                        a.role === 'master_agent' ? 'Incorporator' :
-                        a.role === 'sub_agent' ? 'Master Agent' :
-                        'Gold Agent';
-
                     const row = document.createElement('tr');
 
                     row.innerHTML = `
                         <td>${a.username}</td>
-                        <td>${roleName}</td>
+                        <td>${formatRole(a.role)}</td>
                         <td>${a.points}</td>
-                        <td>${a.parent_username || '-'}</td>
-                        <td class="status ${a.status}">${a.status}</td>
+
+                        <td>
+                            <input type="number" min="0" max="100"
+                                value="${a.commission_rate || 0}"
+                                ${!isDirect ? 'disabled' : ''}
+                                onchange="updateCommission(${a.id}, this.value)">
+                        </td>
+
+                        <td>${a.commission_earnings || 0}</td>
 
                         <td class="actions">
 
-                            <!-- ADD POINTS -->
-                            <button class="btn add ${!isDirect ? 'disabled' : ''}"
-                                onclick="${isDirect ? `openModal(${a.id})` : ''}">
-                                ➕
+                            <button class="btn add ${!isDirect ? 'disabled' : ''}" 
+                                onclick="${isDirect ? `convertCommission(${a.id})` : ''}">
+                                💰
                             </button>
 
-                            <!-- SUSPEND / ACTIVATE -->
-                            <button class="btn ${a.status === 'suspended' ? 'activate' : 'suspend'}"
-                                onclick="toggleStatus(${a.id}, '${a.status}')">
-                                ${a.status === 'suspended' ? '✅' : '⛔'}
-                            </button>
-
-                            <!-- RESET PASSWORD -->
-                            <button class="btn reset" onclick="resetPassword(${a.id})">
-                                🔑
+                            <button class="btn reset ${!isDirect ? 'disabled' : ''}" 
+                                onclick="${isDirect ? `withdrawCommission(${a.id})` : ''}">
+                                💸
                             </button>
 
                         </td>
@@ -397,6 +393,76 @@
             } catch (err) {
                 console.error(err);
             }
+        }
+        function formatRole(role) {
+            switch(role) {
+                case 'master_agent': return '🗃️ Incorporator';
+                case 'sub_agent': return '📑 Master Agent';
+                case 'agent': return '🏷️ Gold Agent';
+                default: return role;
+            }
+        }
+        // =========================
+        // Update commission rate
+        // =========================
+        async function updateCommission(userId, rate) {
+            const res = await fetch('/api/update-commission', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userId, rate: Number(rate) })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            showSnackbar("Commission updated", true);
+        }
+        // =========================
+        // Convert commission to points
+        // =========================
+        async function convertCommission(userId) {
+            const res = await fetch('/api/convert-commission', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userId })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            showSnackbar(data.message, true);
+            loadAgents();
+        }
+        // =========================
+        // Withdraw commission
+        // =========================
+        async function withdrawCommission(userId) {
+            const res = await fetch('/api/withdraw-commission', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ userId })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            showSnackbar(data.message, true);
+            loadAgents();
         }
         checkSession();
     </script>

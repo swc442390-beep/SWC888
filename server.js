@@ -691,3 +691,110 @@ app.get('/api/agents', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// ==========================
+// UPDATE COMMISSION API (ADMIN ONLY)
+// ==========================
+app.post('/api/update-commission', isAuthenticated, async (req, res) => {
+  const { userId, rate } = req.body;
+  const currentUserId = req.session.user.id;
+  if (agent.parent_id !== req.session.user.id) {
+    return res.status(403).json({ error: "Not allowed" });
+  }
+  try {
+    // Get current user's rate
+    const currentUser = await pool.query(
+      'SELECT commission_rate FROM users WHERE id=$1',
+      [currentUserId]
+    );
+
+    const maxAllowed = (currentUser.rows[0].commission_rate || 0) - 1;
+
+    if (rate < 0 || rate > maxAllowed) {
+      return res.status(400).json({ error: "Invalid commission rate" });
+    }
+
+    await pool.query(
+      'UPDATE users SET commission_rate=$1 WHERE id=$2',
+      [rate, userId]
+    );
+
+    res.json({ message: "Commission updated" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ==========================
+// CONVERT COMMISSION API (ADMIN ONLY)
+// ==========================
+app.post('/api/convert-commission', isAuthenticated, async (req, res) => {
+  const { userId } = req.body;
+  if (agent.parent_id !== req.session.user.id) {
+    return res.status(403).json({ error: "Not allowed" });
+  }
+  try {
+    const user = await pool.query(
+      'SELECT commission_earnings, parent_id FROM users WHERE id=$1',
+      [userId]
+    );
+
+    const amount = user.rows[0].commission_earnings;
+
+    if (amount <= 0) {
+      return res.status(400).json({ error: "No commission available" });
+    }
+
+    // Add to points
+    await pool.query(
+      'UPDATE users SET points = points + $1, commission_earnings = 0 WHERE id=$2',
+      [amount, userId]
+    );
+
+    res.json({ message: "Commission converted to points" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ==========================
+// WITHDRAW COMMISSION API (ADMIN ONLY)
+// ==========================
+app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
+  const { userId } = req.body;
+  if (agent.parent_id !== req.session.user.id) {
+    return res.status(403).json({ error: "Not allowed" });
+  }
+  try {
+    const user = await pool.query(
+      'SELECT commission_earnings, parent_id FROM users WHERE id=$1',
+      [userId]
+    );
+
+    const amount = user.rows[0].commission_earnings;
+    const parentId = user.rows[0].parent_id;
+
+    if (amount <= 0) {
+      return res.status(400).json({ error: "No commission to withdraw" });
+    }
+
+    // Deduct from agent
+    await pool.query(
+      'UPDATE users SET commission_earnings = 0 WHERE id=$1',
+      [userId]
+    );
+
+    // Return to parent
+    await pool.query(
+      'UPDATE users SET points = points + $1 WHERE id=$2',
+      [amount, parentId]
+    );
+
+    res.json({ message: "Commission returned to parent" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
