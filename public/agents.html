@@ -87,6 +87,18 @@
                 <button onclick="closeModal()">Cancel</button>
             </div>
         </div>
+        <!-- COMMISSION MODAL -->
+        <div id="commissionModal" class="modal">
+            <div class="modal-content">
+                <h3 id="modalTitle"></h3>
+                <p>Available: <span id="availableAmount">0</span></p>
+                <input type="number" id="commissionInput" placeholder="Enter amount">
+                <button onclick="confirmCommission()">Confirm</button>
+                <button onclick="closeCommissionModal()">Cancel</button>
+            </div>
+        </div>
+
+        <div id="snackbar"></div>
         <footer>
             © 2024 Pitwarriors619. All rights reserved.
         </footer>
@@ -375,12 +387,12 @@
                         <td class="actions">
 
                             <button class="btn add ${!isDirect ? 'disabled' : ''}" 
-                                onclick="${isDirect ? `convertCommission(${a.id})` : ''}">
+                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.commission_earnings || 0}, 'convert')` : ''}">
                                 💰
                             </button>
 
                             <button class="btn reset ${!isDirect ? 'disabled' : ''}" 
-                                onclick="${isDirect ? `withdrawCommission(${a.id})` : ''}">
+                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.commission_earnings || 0}, 'withdraw')` : ''}">
                                 💸
                             </button>
 
@@ -464,6 +476,70 @@
             showSnackbar(data.message, true);
             loadAgents();
         }
+        // =========================
+        // Commission modal logic
+        // =========================
+        let actionType = null;
+        let selectedAgentId = null;
+        let maxAmount = 0;
+
+        function openCommissionModal(userId, available, type) {
+            selectedAgentId = userId;
+            actionType = type;
+            maxAmount = available;
+
+            document.getElementById('availableAmount').textContent = available;
+            document.getElementById('commissionInput').value = '';
+
+            document.getElementById('modalTitle').textContent =
+                type === 'convert' ? 'Convert Commission' : 'Withdraw Commission';
+
+            document.getElementById('commissionModal').style.display = 'flex';
+        }
+
+        function closeCommissionModal() {
+            document.getElementById('commissionModal').style.display = 'none';
+        }
+        // =========================
+        // Handle commission conversion/withdrawal
+        // =========================
+        async function confirmCommission() {
+            const amount = Number(document.getElementById('commissionInput').value);
+
+            if (!amount || amount <= 0 || amount > maxAmount) {
+                showSnackbar("Invalid amount");
+                return;
+            }
+
+            const endpoint = actionType === 'convert'
+                ? '/api/convert-commission'
+                : '/api/withdraw-commission';
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: selectedAgentId,
+                    amount
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            showSnackbar(data.message, true);
+            closeCommissionModal();
+            loadAgents();
+        }
+        // =========================
+        // Commission modal logic
+        // =========================
+
         checkSession();
     </script>
 

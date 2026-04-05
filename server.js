@@ -697,11 +697,23 @@ app.get('/api/agents', isAuthenticated, async (req, res) => {
 app.post('/api/update-commission', isAuthenticated, async (req, res) => {
   const { userId, rate } = req.body;
   const currentUserId = req.session.user.id;
-  if (agent.parent_id !== req.session.user.id) {
-    return res.status(403).json({ error: "Not allowed" });
-  }
+
   try {
-    // Get current user's rate
+    // Get agent
+    const agentRes = await pool.query(
+      'SELECT parent_id FROM users WHERE id=$1',
+      [userId]
+    );
+
+    if (agentRes.rows.length === 0) {
+      return res.status(404).json({ error: "Agent not found" });
+    }
+
+    if (Number(agentRes.rows[0].parent_id) !== Number(currentUserId)) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    // Get current user's commission
     const currentUser = await pool.query(
       'SELECT commission_rate FROM users WHERE id=$1',
       [currentUserId]
@@ -729,31 +741,42 @@ app.post('/api/update-commission', isAuthenticated, async (req, res) => {
 // CONVERT COMMISSION API (ADMIN ONLY)
 // ==========================
 app.post('/api/convert-commission', isAuthenticated, async (req, res) => {
-  const { userId } = req.body;
-  if (agent.parent_id !== req.session.user.id) {
-    return res.status(403).json({ error: "Not allowed" });
-  }
+  const { userId, amount } = req.body;
+  const currentUserId = req.session.user.id;
+
   try {
     const user = await pool.query(
       'SELECT commission_earnings, parent_id FROM users WHERE id=$1',
       [userId]
     );
 
-    const amount = user.rows[0].commission_earnings;
-
-    if (amount <= 0) {
-      return res.status(400).json({ error: "No commission available" });
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    // Add to points
+    if (Number(user.rows[0].parent_id) !== Number(currentUserId)) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const available = Number(user.rows[0].commission_earnings);
+
+    if (amount <= 0 || amount > available) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    await pool.query('BEGIN');
+
     await pool.query(
-      'UPDATE users SET points = points + $1, commission_earnings = 0 WHERE id=$2',
+      'UPDATE users SET points = points + $1, commission_earnings = commission_earnings - $1 WHERE id=$2',
       [amount, userId]
     );
 
-    res.json({ message: "Commission converted to points" });
+    await pool.query('COMMIT');
+
+    res.json({ message: "Commission converted" });
 
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
@@ -762,38 +785,48 @@ app.post('/api/convert-commission', isAuthenticated, async (req, res) => {
 // WITHDRAW COMMISSION API (ADMIN ONLY)
 // ==========================
 app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
-  const { userId } = req.body;
-  if (agent.parent_id !== req.session.user.id) {
-    return res.status(403).json({ error: "Not allowed" });
-  }
+  const { userId, amount } = req.body;
+  const currentUserId = req.session.user.id;
+
   try {
     const user = await pool.query(
       'SELECT commission_earnings, parent_id FROM users WHERE id=$1',
       [userId]
     );
 
-    const amount = user.rows[0].commission_earnings;
-    const parentId = user.rows[0].parent_id;
-
-    if (amount <= 0) {
-      return res.status(400).json({ error: "No commission to withdraw" });
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    // Deduct from agent
+    if (Number(user.rows[0].parent_id) !== Number(currentUserId)) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const available = Number(user.rows[0].commission_earnings);
+    const parentId = user.rows[0].parent_id;
+
+    if (amount <= 0 || amount > available) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    await pool.query('BEGIN');
+
     await pool.query(
-      'UPDATE users SET commission_earnings = 0 WHERE id=$1',
-      [userId]
+      'UPDATE users SET commission_earnings = commission_earnings - $1 WHERE id=$2',
+      [amount, userId]
     );
 
-    // Return to parent
     await pool.query(
       'UPDATE users SET points = points + $1 WHERE id=$2',
       [amount, parentId]
     );
 
-    res.json({ message: "Commission returned to parent" });
+    await pool.query('COMMIT');
+
+    res.json({ message: "Commission withdrawn" });
 
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
