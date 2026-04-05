@@ -215,6 +215,9 @@
             document.execCommand("copy");
             showSnackbar("Link copied!");
         }
+        // =========================
+        // Load pending approvals count
+        // =========================
         async function loadPendingCount() {
             try {
                 const res = await fetch('/api/pending-count', {
