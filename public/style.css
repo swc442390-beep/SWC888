@@ -576,3 +576,28 @@ button:active {
     opacity: 0.4;
     pointer-events: none;
 }
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* ✅ PREVENT BREAKING */
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+    white-space: nowrap;       /* ✅ PREVENT LINE BREAK */
+    overflow: hidden;
+    text-overflow: ellipsis;   /* ✅ ADD "..." */
+}
+.actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}

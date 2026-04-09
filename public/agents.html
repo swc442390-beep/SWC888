@@ -66,11 +66,11 @@
                     <table class="styled-table">
                         <thead>
                             <tr>
-                                <th>Username</th>
+                                <th onclick="sortTable('username')">Username ⬍</th>
                                 <th>Actions</th>
-                                <th>Wallet</th>
-                                <th>Earnings</th>
-                                <th>Commission</th>
+                                <th onclick="sortTable('points')">Wallet ⬍</th>
+                                <th onclick="sortTable('earnings')">Earnings ⬍</th>
+                                <th onclick="sortTable('commission')">Commission ⬍</th>
                             </tr>
                         </thead>
                         <tbody id="agentsTable"></tbody>
@@ -340,6 +340,15 @@
             closeModal();
             loadAgents();
         }
+        let sortDirection = 1; // 1 = asc, -1 = desc
+        let currentSort = '';
+
+        function sortTable(column) {
+            sortDirection = currentSort === column ? -sortDirection : 1;
+            currentSort = column;
+
+            loadAgents();
+        }
         async function loadAgents() {
             try {
                 const session = await fetch('/api/dashboard', { credentials: 'include' });
@@ -360,7 +369,36 @@
                 if (statusFilter) {
                     agents = agents.filter(a => a.status === statusFilter);
                 }
+                
+                // SORTING
+                if (currentSort) {
+                    agents.sort((a, b) => {
+                        let valA, valB;
 
+                        switch(currentSort) {
+                            case 'username':
+                                valA = a.username.toLowerCase();
+                                valB = b.username.toLowerCase();
+                                break;
+                            case 'points':
+                                valA = Number(a.points);
+                                valB = Number(b.points);
+                                break;
+                            case 'earnings':
+                                valA = Number(a.commission_earnings || 0);
+                                valB = Number(b.commission_earnings || 0);
+                                break;
+                            case 'commission':
+                                valA = Number(a.commission_rate || 0);
+                                valB = Number(b.commission_rate || 0);
+                                break;
+                        }
+
+                        if (valA < valB) return -1 * sortDirection;
+                        if (valA > valB) return 1 * sortDirection;
+                        return 0;
+                    });
+                }
                 const table = document.getElementById('agentsTable');
                 table.innerHTML = '';
 
@@ -381,7 +419,8 @@
                                 <option value="withdraw_load">💸 Withdraw Load</option>
                                 <option value="withdraw_commission">💰 Withdraw Commission</option>
                                 <option value="block">⛔ Block</option>
-                            </select><br>
+                            </select>
+                            <br>
                         </td>
                         <td>${formatPHP(a.points)}</td>
                         <td>${formatPHP(a.commission_earnings || 0)}</td>
