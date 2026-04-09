@@ -67,10 +67,9 @@
                         <thead>
                             <tr>
                                 <th>Username</th>
-                                <th>Role</th>
-                                <th>Points</th>
+                                <th>Wallet</th>
                                 <th>Commission Rate</th>
-                                <th>Commission Earnings</th>
+                                <th>Earnings</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -372,8 +371,7 @@
                     const row = document.createElement('tr');
 
                     row.innerHTML = `
-                        <td>${a.username}</td>
-                        <td>${formatRole(a.role)}</td>
+                        <td class="btn add">${a.username}<br>${formatRole(a.role)}</td>
                         <td>${a.points}</td>
 
                         <td>
