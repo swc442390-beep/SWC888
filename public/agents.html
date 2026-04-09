@@ -278,7 +278,7 @@
             });
 
             showSnackbar("Status updated");
-            loadPlayers();
+            loadAgents();
         }
         // =========================
         // Reset password
@@ -339,7 +339,7 @@
             showSnackbar(data.message, true);
 
             closeModal();
-            loadPlayers();
+            loadAgents();
         }
         async function loadAgents() {
             try {
@@ -386,7 +386,10 @@
                         <td>${a.commission_earnings || 0}</td>
 
                         <td class="actions">
-
+                            <button class="btn add ${!isDirect ? 'disabled' : ''}" 
+                                onclick="${isDirect ? `openModal(${a.id})` : ''}">
+                                ➕
+                            </button>
                             <button class="btn add ${!isDirect ? 'disabled' : ''}" 
                                 onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.commission_earnings || 0}, 'convert')` : ''}">
                                 💰

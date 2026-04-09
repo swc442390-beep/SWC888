@@ -536,7 +536,7 @@ app.post('/api/add-points', isAuthenticated, async (req, res) => {
 
     // 🔍 Get player
     const playerRes = await pool.query(
-      'SELECT parent_id, points FROM users WHERE id = $1',
+      'SELECT parent_id, points, role FROM users WHERE id = $1',
       [userId]
     );
 
