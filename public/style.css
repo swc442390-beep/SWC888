@@ -562,3 +562,17 @@ button:active {
     border-radius: 12px;
     width: 300px;
 }
+
+.action-dropdown {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    cursor: pointer;
+}
+
+.action-dropdown.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}

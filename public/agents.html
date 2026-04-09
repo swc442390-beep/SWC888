@@ -373,21 +373,18 @@
                     row.innerHTML = `
                         <td>${a.username}<br><p class="btn add">${formatRole(a.role)}</p></td>
                         <td class="actions">
-                            <td class="actions">
-                                <select class="action-dropdown ${!isDirect ? 'disabled' : ''}" 
-                                    onchange="handleAgentAction(this.value, ${a.id}, ${a.points || 0}, ${a.commission_earnings || 0})">
+                            <select class="action-dropdown ${!isDirect ? 'disabled' : ''}" 
+                                onchange="handleAgentAction(this.value, ${a.id}, ${a.points || 0}, ${a.commission_earnings || 0})">
                                     
-                                    <option value="">⚙️ Select Action</option>
-                                    <option value="load">➕ Load</option>
-                                    <option value="withdraw_load">💸 Withdraw Load</option>
-                                    <option value="withdraw_commission">💰 Withdraw Commission</option>
-                                    <option value="block">⛔ Block</option>
-                                </select>
-                            </td>
-
+                                <option value="">⚙️ Select Action</option>
+                                <option value="load">➕ Load</option>
+                                <option value="withdraw_load">💸 Withdraw Load</option>
+                                <option value="withdraw_commission">💰 Withdraw Commission</option>
+                                <option value="block">⛔ Block</option>
+                            </select>
                         </td>
-                        <td>${a.points}</td>
-                        <td>${a.commission_earnings || 0}</td>
+                        <td>${formatPHP(a.points)}</td>
+                        <td>${formatPHP(a.commission_earnings || 0)}</td>
                         <td>
                             CURRENT: ${a.commission_rate || 0}%<br>
                             <input type="number" min="0" max="100"
@@ -564,6 +561,12 @@
 
             // Reset dropdown after action
             event.target.value = "";
+        }
+        function formatPHP(amount) {
+            return new Intl.NumberFormat('en-PH', {
+                style: 'currency',
+                currency: 'PHP'
+            }).format(amount);
         }
         checkSession();
     </script>
