@@ -382,17 +382,17 @@
                                 onchange="updateCommission(${a.id}, this.value)">
                         </td>
 
-                        <td>${a.commission_earnings || 0}</td>
+                        <td>${a.points || 0}</td>
 
                         <td class="actions">
 
                             <button class="btn add ${!isDirect ? 'disabled' : ''}" 
-                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.commission_earnings || 0}, 'convert')` : ''}">
+                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.points || 0}, 'convert')` : ''}">
                                 💰
                             </button>
 
                             <button class="btn reset ${!isDirect ? 'disabled' : ''}" 
-                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.commission_earnings || 0}, 'withdraw')` : ''}">
+                                onclick="${isDirect ? `openCommissionModal(${a.id}, ${a.points || 0}, 'withdraw')` : ''}">
                                 💸
                             </button>
 
@@ -459,7 +459,7 @@
         // Withdraw commission
         // =========================
         async function withdrawCommission(userId) {
-            const res = await fetch('/api/withdraw-commission', {
+            const res = await fetch('/api/withdraw-points', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -492,7 +492,7 @@
             document.getElementById('commissionInput').value = '';
 
             document.getElementById('modalTitle').textContent =
-                type === 'convert' ? 'Convert Commission' : 'Withdraw Commission';
+                type === 'convert' ? 'Convert Commission' : 'Withdraw Points';
 
             document.getElementById('commissionModal').style.display = 'flex';
         }
@@ -513,7 +513,7 @@
 
             const endpoint = actionType === 'convert'
                 ? '/api/convert-commission'
-                : '/api/withdraw-commission';
+                : '/api/withdraw-points';
 
             const res = await fetch(endpoint, {
                 method: 'POST',

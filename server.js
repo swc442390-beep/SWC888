@@ -786,13 +786,13 @@ app.post('/api/convert-commission', isAuthenticated, async (req, res) => {
 // ==========================
 // WITHDRAW COMMISSION API (ADMIN ONLY)
 // ==========================
-app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
+app.post('/api/withdraw-points', isAuthenticated, async (req, res) => {
   const { userId, amount } = req.body;
   const currentUserId = req.session.user.id;
 
   try {
     const user = await pool.query(
-      'SELECT commission_earnings, parent_id FROM users WHERE id=$1',
+      'SELECT points, parent_id FROM users WHERE id=$1',
       [userId]
     );
 
@@ -804,7 +804,7 @@ app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
       return res.status(403).json({ error: "Not allowed" });
     }
 
-    const available = Number(user.rows[0].commission_earnings);
+    const available = Number(user.rows[0].points);
     const parentId = user.rows[0].parent_id;
 
     if (amount <= 0 || amount > available) {
@@ -813,11 +813,13 @@ app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
 
     await pool.query('BEGIN');
 
+    // ➖ Deduct from agent POINTS
     await pool.query(
-      'UPDATE users SET commission_earnings = commission_earnings - $1 WHERE id=$2',
+      'UPDATE users SET points = points - $1 WHERE id=$2',
       [amount, userId]
     );
 
+    // ➕ Add to parent POINTS
     await pool.query(
       'UPDATE users SET points = points + $1 WHERE id=$2',
       [amount, parentId]
@@ -825,7 +827,7 @@ app.post('/api/withdraw-commission', isAuthenticated, async (req, res) => {
 
     await pool.query('COMMIT');
 
-    res.json({ message: "Commission withdrawn" });
+    res.json({ message: "Points withdrawn successfully" });
 
   } catch (err) {
     await pool.query('ROLLBACK');
