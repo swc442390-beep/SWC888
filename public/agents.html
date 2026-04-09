@@ -431,8 +431,9 @@
                 showSnackbar(data.error);
                 return;
             }
-            loadAgents();
+            
             showSnackbar("Commission updated", true);
+            loadAgents();
         }
         // =========================
         // Convert commission to points
