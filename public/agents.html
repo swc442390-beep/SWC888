@@ -68,7 +68,7 @@
                             <tr>
                                 <th>Username</th>
                                 <th>Wallet</th>
-                                <th>Commission Rate</th>
+                                <th>Commission</th>
                                 <th>Earnings</th>
                                 <th>Actions</th>
                             </tr>
@@ -375,6 +375,7 @@
                         <td>${a.points}</td>
 
                         <td>
+                            CURRENT: ${a.commission_rate || 0}%<br>
                             <input type="number" min="0" max="100"
                                 value="${a.commission_rate || 0}"
                                 ${!isDirect ? 'disabled' : ''}
