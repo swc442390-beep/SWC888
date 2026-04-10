@@ -1,0 +1,591 @@
+/* ==========================
+   RESET & BASE
+========================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Eras Medium ITC", "Eras ITC", "Eras Md BT", sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    text-align: center;
+}
+
+/* ==========================
+   LOGIN CONTAINER
+========================== */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 30px;
+    background-color: #1e293b;
+    border: 2px solid #14b8a6;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+    max-width: 360px;
+    margin: 80px auto;
+}
+
+.logo {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 10px 0 30px 0;
+    color: #14b8a6;
+}
+
+/* ==========================
+   INPUTS
+========================== */
+.input-group {
+    width: 100%;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.input-group label {
+    color: #94a3b8;
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon .icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.input-icon input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+input::placeholder {
+    color: #64748b;
+}
+
+/* ==========================
+   BUTTON
+========================== */
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    background: linear-gradient(135deg, #14b8a6, #0ea5e9);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* ==========================
+   DASHBOARD LAYOUT
+========================== */
+.dashboard-body {
+    display: flex;
+}
+
+/* ==========================
+   SIDEBAR
+========================== */
+/* ==========================
+   SIDEBAR (FULL FIXED)
+========================== */
+.sidebar {
+    width: 250px;
+    background: #1e293b;
+    color: #e2e8f0;
+    height: 100vh;
+    transition: 0.3s;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* COLLAPSED (DESKTOP) */
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar.collapsed h2,
+.sidebar.collapsed a,
+.sidebar.collapsed .category {
+    font-size: 0;
+    padding-left: 10px;
+}
+
+/* TITLE */
+.sidebar h2 {
+    padding: 20px;
+    font-size: 18px;
+    border-bottom: 1px solid #334155;
+    color: #14b8a6;
+}
+
+/* LINKS */
+.sidebar a {
+    display: block;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #cbd5f5;
+    text-align: left;
+    transition: 0.2s;
+}
+
+.sidebar a:hover {
+    background: #0f172a;
+}
+
+/* CATEGORY */
+.sidebar .category {
+    padding: 10px 20px;
+    color: #0ea5e9;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+/* ==========================
+   OVERLAY (MOBILE)
+========================== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    display: none;
+    z-index: 900;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* ==========================
+   MOBILE SIDEBAR
+========================== */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main {
+        width: 100%;
+    }
+}
+/* ==========================
+   MAIN
+========================== */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 10px 20px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+.content {
+    padding: 20px;
+}
+
+/* ==========================
+   MEMBERSHIP CARD
+========================== */
+.membership-card {
+    display: block; /* ✅ stack content vertically */
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Wrapper = vertical stack */
+.link-wrapper {
+    display: flex;
+    flex-direction: column; /* ✅ STACK input + button */
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* INPUT full width */
+.membership-link {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+}
+
+/* BUTTON full width */
+.link-wrapper button {
+    width: 100%; /* ✅ FULL WIDTH */
+    padding: 12px;
+}
+
+/* ==========================
+   CARDS GRID
+========================== */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* desktop: 2 rows */
+    gap: 20px;
+}
+
+/* MOBILE: single column */
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================
+   CARD
+========================== */
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+}
+
+.card-content {
+    text-align: left;
+    width: 100%;
+}
+
+.card-icon {
+    margin-left: 20px;
+}
+
+.amount {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* ==========================
+   BADGES
+========================== */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.badge.blue {
+    background: #3498db;
+}
+
+.badge.red {
+    background: #e74c3c;
+}
+
+/* ==========================
+   COMMISSION
+========================== */
+.rate-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.rate-box {
+    background: #2ecc71;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* ==========================
+   COLORS
+========================== */
+.wallet-card { background: #e74c3c; }
+.commission-card { background: #3498db; }
+.agents-card { background: #2ecc71; }
+.players-card { background: #f1c40f; color: #000; }
+
+/* ==========================
+   FOOTER
+========================== */
+footer {
+    margin-top: auto;
+    padding: 10px;
+    border-top: 1px solid #334155;
+}
+
+/* ==========================
+   SNACKBAR
+========================== */
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    background: #1e293b;
+    color: white;
+    padding: 14px;
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%) translateY(20px);
+    border-left: 5px solid #14b8a6;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#snackbar.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+#snackbar.error { border-left-color: #ef4444; }
+#snackbar.warning { border-left-color: #f59e0b; }
+
+/* ==========================
+   LOGIN LINK (SIGNUP PAGE)
+========================== */
+.login-link {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.login-link a {
+    color: #14b8a6;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+#pendingBadge {
+    margin-left: 8px;
+    font-size: 11px;
+    padding: 3px 7px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 20px;
+        margin: 40px 15px;
+    }
+
+    .logo {
+        width: 60px;
+        margin-bottom: 15px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+}
+
+.input-icon input:focus {
+    border-color: #14b8a6;
+    outline: none;
+    box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+}
+
+.pending-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.pending-table th,
+.pending-table td {
+    padding: 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+.pending-table th {
+    color: #14b8a6;
+}
+
+.pending-table select {
+    padding: 6px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+}
+
+.pending-table button {
+    padding: 6px 10px;
+    margin-right: 5px;
+    width: auto;
+}
+
+@media (max-width: 768px) {
+    .pending-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* FILTER */
+.filter-bar {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.styled-select {
+    padding: 10px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+}
+
+/* TABLE */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+/* STATUS COLORS */
+.status.online { color: #2ecc71; }
+.status.offline { color: #94a3b8; }
+.status.suspended { color: #e74c3c; }
+
+/* BUTTONS */
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn.add { background: #2ecc71; }
+.btn.suspend { background: #e74c3c; }
+.btn.activate { background: #3498db; }
+.btn.reset { background: #f1c40f; color: black; }
+
+.btn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    width: 300px;
+}
+
+.action-dropdown {
+    width: auto;
+    min-width: 90px;
+    max-width: 120px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    cursor: pointer;
+}
+
+.action-dropdown.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+.styled-table th, .styled-table td {
+    white-space: nowrap;        /* Prevent text wrapping */
+    overflow: hidden;           /* Hide overflow */
+    text-overflow: ellipsis;    /* Add ... if content too long */
+}
+
+.styled-table .actions {
+    min-width: 150px;
+}
+
