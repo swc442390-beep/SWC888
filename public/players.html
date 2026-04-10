@@ -222,7 +222,7 @@
                         <td><p class="btn add">${p.username}</p><br>${p.parent_username || '-'}</td>
                         <td>${p.points}</td>
                         <td class="status ${p.status}">${p.status}</td>
-                        <td class="actions">
+                        <td>
 
                             <button class="btn add ${!isDirect ? 'disabled' : ''}" 
                                 onclick="${isDirect ? `openModal(${p.id})` : ''}">
