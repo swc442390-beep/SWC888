@@ -65,7 +65,7 @@
                             <tr>
                                 <th>Username</th>
                                 <th>Points</th>
-                                
+                                <th>Agent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -219,10 +219,11 @@
                     const row = document.createElement('tr');
                     console.log("Player parent:", p.parent_id, "Current user:", currentUserId);
                     row.innerHTML = `
-                        <td><p class="btn add">${p.username}</p><br>${p.parent_username || '-'}</td>
+                        <td>${p.username}</td>
                         <td>${p.points}</td>
+                        <td>${p.parent_username || '-'}</td>
                         <td class="status ${p.status}">${p.status}</td>
-                        <td>
+                        <td class="actions">
 
                             <button class="btn add ${!isDirect ? 'disabled' : ''}" 
                                 onclick="${isDirect ? `openModal(${p.id})` : ''}">
