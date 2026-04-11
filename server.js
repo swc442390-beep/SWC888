@@ -1000,3 +1000,26 @@ app.post('/api/withdraw-request', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+// ==========================
+// WITHDRAWAL COUNT API
+// ==========================
+app.get('/api/withdrawal-count', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    const result = await pool.query(`
+      SELECT COUNT(*) 
+      FROM withdrawal_requests
+      WHERE approver_id = $1 AND status = 'pending'
+    `, [userId]);
+
+    res.json({
+      count: parseInt(result.rows[0].count)
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
