@@ -607,3 +607,12 @@ button:active {
         flex-direction: column;
     }
 }
+
+.hamburger {
+    font-size: 26px;
+    cursor: pointer;
+    color: #e2e8f0;
+    padding: 10px 15px;
+    display: inline-block;
+    width: auto;
+}
