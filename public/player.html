@@ -162,6 +162,7 @@
     let payoutMeron = 0;
     let payoutWala = 0;
     let payoutDraw = 0;
+    let lastStatus = null;
 
     function setAmount(val){
         document.getElementById('betAmount').value = val;
@@ -280,31 +281,50 @@
             const status = document.getElementById('betStatus');
             status.textContent = data.status;
             status.className = "status " + data.status;
-            if(data.status !== 'OPEN'){
-                disableBetting("Betting is closed");
-            }else{
-                document.querySelectorAll('.bet-btn').forEach(btn=>{
-                    btn.disabled = false;
-                    btn.style.opacity = 1;
-                });
+            if (data.status !== lastStatus) {
+
+                if(data.status !== 'OPEN'){
+                    disableBetting("Betting is closed");
+                } else {
+                    document.querySelectorAll('.bet-btn').forEach(btn=>{
+                        btn.disabled = false;
+                        btn.style.opacity = 1;
+                    });
+                }
+
+                lastStatus = data.status;
             }
         }catch(e){
             console.error(e);
         }
     }
-    // 🚫 DISABLE BETTING
+    // 💰 CHECK BALANCE
     async function checkPlayerBalance(){
-        const res = await fetch('/api/dashboard-wallets',{credentials:'include'});
-        const data = await res.json();
+        try {
+            const res = await fetch('/api/dashboard-wallets',{
+                credentials:'include'
+            });
 
-        const balance = Number(data.userBalance || 0);
+            if (!res.ok) {
+                console.error("Wallet API failed:", res.status);
+                return;
+            }
 
-        document.getElementById('balance').textContent = balance;
+            const data = await res.json();
 
-        if(balance <= 0){
-            disableBetting("No balance. Contact your agent.");
+            console.log("Wallet API:", data); // DEBUG
+
+            const balance = Number(data.userBalance ?? 0);
+
+            document.getElementById('balance').textContent = balance;
+
+            if(balance <= 0){
+                disableBetting("No balance. Contact your agent.");
+            }
+
+        } catch(err){
+            console.error("Balance fetch error:", err);
         }
-        console.log("Wallet API:", data);
     }
     // 🚫 DISABLE BETTING
     function disableBetting(message){
