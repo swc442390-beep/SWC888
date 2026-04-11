@@ -45,6 +45,26 @@
 
 <body class="dashboard-body">
 <div id="snackbar"></div>
+<div class="topbar">
+    <button class="hamburger" onclick="openSidebar()">☰</button>
+    <div class="logo">Pitwarriors619</div>
+</div>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h2>Welcome, <span class="username">Player</span></h2>
+
+    <!-- MAIN -->
+    <a href="player.html">🏠 Play / Dashboard</a>
+    <a href="wallet-logs-player.html">📄 Wallet Transactions</a>
+    <a href="withdrawal-request.html">💸 Withdrawal Request</a>
+
+    <div class="category">Account</div>
+    <a href="change-password-player.html">🔑 Change Password</a>
+    <a href="/api/logout">🚪 Logout</a>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
 <div class="main">
 <div class="content">
 <div class="game-layout">
@@ -304,6 +324,37 @@
             sb.classList.remove("show");
         },3000);
     }
+    function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('collapsed');
+    }
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('overlay').classList.remove('active');
+    }
+
+    // close when clicking outside (mobile)
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+
+        if (window.innerWidth <= 768 &&
+            sidebar.classList.contains('active')) {
+
+            if (!sidebar.contains(event.target) &&
+                !event.target.classList.contains('hamburger')) {
+                closeSidebar();
+            }
+        }
+    });
+
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
 
