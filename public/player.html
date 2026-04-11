@@ -124,6 +124,11 @@
                 <div class="total-box" style="background:#374151; width:100%;">
                     DRAW: <span id="totalDraw">0</span>
                 </div>
+                <div class="half">PAYOUT: <span id="payoutDraw">0</span></div>
+                <div class="half">
+                    Your Bet: <span id="myDraw">0</span><br>
+                    Win: <span id="winDraw">0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -134,6 +139,7 @@
 <script>
     let payoutMeron = 0;
     let payoutWala = 0;
+    let payoutDraw = 0;
 
     function setAmount(val){
         document.getElementById('betAmount').value = val;
@@ -189,6 +195,9 @@
 
         document.getElementById('winWala').textContent =
             (amount * payoutWala).toFixed(2);
+
+        document.getElementById('winDraw').textContent =
+            (amount * payoutDraw).toFixed(2);
     }
 
     document.getElementById('betAmount').addEventListener('input', updatePreview);
@@ -203,18 +212,24 @@
             document.getElementById('totalWala').textContent = data.totalWala;
             document.getElementById('totalDraw').textContent = data.totalDraw || 0;
 
-            const totalPool = data.totalMeron + data.totalWala + (data.totalDraw || 0);
+            const totalPool =
+                data.totalMeron +
+                data.totalWala +
+                (data.totalDraw || 0);
+
             const CUT = 0.915;
 
+            // avoid divide-by-zero
             payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
             payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
-
+            payoutDraw = data.totalDraw ? (totalPool / data.totalDraw) * CUT : 0;
             document.getElementById('payoutMeron').textContent =
                 (payoutMeron * 100).toFixed(2);
 
             document.getElementById('payoutWala').textContent =
                 (payoutWala * 100).toFixed(2);
-
+            document.getElementById('payoutDraw').textContent =
+                (payoutDraw * 100).toFixed(2);
             const myMeron = Number(data.myMeron || 0);
             const myWala = Number(data.myWala || 0);
 
