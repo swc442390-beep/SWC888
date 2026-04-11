@@ -237,13 +237,15 @@
                 }
 
                 showSnackbar("User approved", "success");
-                loadPendingUsers();
-                loadPendingCount();
+               
 
             } catch (err) {
                 console.error(err);
                 showSnackbar("Server error", "error");
             }
+             loadPendingUsers();
+                loadPendingCount();
+                loadPendingUsers();
         }
 
         // =========================
