@@ -115,82 +115,83 @@ Balance: <span id="balance">0</span>
 </div>
 
 <script>
-let payoutMeron = 0;
-let payoutWala = 0;
+    let payoutMeron = 0;
+    let payoutWala = 0;
 
-function setAmount(val){
-    document.getElementById('betAmount').value = val;
-    updatePreview();
-}
-
-function placeBet(side){
-    const amount = Number(document.getElementById('betAmount').value);
-    if (!amount) return alert("Enter amount");
-    alert(`Bet ${side.toUpperCase()} = ${amount}`);
-}
-
-// 🔥 LIVE PREVIEW
-function updatePreview(){
-    const amount = Number(document.getElementById('betAmount').value) || 0;
-
-    document.getElementById('winMeron').textContent =
-        (amount * payoutMeron).toFixed(2);
-
-    document.getElementById('winWala').textContent =
-        (amount * payoutWala).toFixed(2);
-}
-
-document.getElementById('betAmount').addEventListener('input', updatePreview);
-
-async function fetchGame(){
-    try{
-        const res = await fetch('/api/game-status',{credentials:'include'});
-        const data = await res.json();
-
-        document.getElementById('fightNumber').textContent = data.fightNumber;
-        document.getElementById('totalMeron').textContent = data.totalMeron;
-        document.getElementById('totalWala').textContent = data.totalWala;
-
-        const totalPool = data.totalMeron + data.totalWala;
-        const CUT = 0.915;
-
-        payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
-        payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
-
-        document.getElementById('payoutMeron').textContent =
-            (payoutMeron * 100).toFixed(2);
-
-        document.getElementById('payoutWala').textContent =
-            (payoutWala * 100).toFixed(2);
-
-        const myMeron = Number(data.myMeron || 0);
-        const myWala = Number(data.myWala || 0);
-
-        document.getElementById('myMeron').textContent = myMeron;
-        document.getElementById('myWala').textContent = myWala;
-
-        // ✅ Only update win if no manual input (prevents override)
-        const currentInput = Number(document.getElementById('betAmount').value);
-
-        if (!currentInput){
-            document.getElementById('winMeron').textContent =
-                (myMeron * payoutMeron).toFixed(2);
-
-            document.getElementById('winWala').textContent =
-                (myWala * payoutWala).toFixed(2);
-        }
-
-        const status = document.getElementById('betStatus');
-        status.textContent = data.status;
-        status.className = "status " + data.status;
-
-    }catch(e){
-        console.error(e);
+    function setAmount(val){
+        document.getElementById('betAmount').value = val;
+        updatePreview();
     }
-}
 
-setInterval(fetchGame,3000);
-fetchGame();
+    function placeBet(side){
+        const amount = Number(document.getElementById('betAmount').value);
+        if (!amount) return alert("Enter amount");
+        alert(`Bet ${side.toUpperCase()} = ${amount}`);
+    }
+
+    // 🔥 LIVE PREVIEW
+    function updatePreview(){
+        const amount = Number(document.getElementById('betAmount').value) || 0;
+
+        document.getElementById('winMeron').textContent =
+            (amount * payoutMeron).toFixed(2);
+
+        document.getElementById('winWala').textContent =
+            (amount * payoutWala).toFixed(2);
+    }
+
+    document.getElementById('betAmount').addEventListener('input', updatePreview);
+
+    async function fetchGame(){
+        try{
+            const res = await fetch('/api/game-status',{credentials:'include'});
+            const data = await res.json();
+
+            document.getElementById('fightNumber').textContent = data.fightNumber;
+            document.getElementById('totalMeron').textContent = data.totalMeron;
+            document.getElementById('totalWala').textContent = data.totalWala;
+
+            const totalPool = data.totalMeron + data.totalWala;
+            const CUT = 0.915;
+
+            payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
+            payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
+
+            document.getElementById('payoutMeron').textContent =
+                (payoutMeron * 100).toFixed(2);
+
+            document.getElementById('payoutWala').textContent =
+                (payoutWala * 100).toFixed(2);
+
+            const myMeron = Number(data.myMeron || 0);
+            const myWala = Number(data.myWala || 0);
+
+            document.getElementById('myMeron').textContent = myMeron;
+            document.getElementById('myWala').textContent = myWala;
+
+            // ✅ Only update win if no manual input (prevents override)
+            const currentInput = Number(document.getElementById('betAmount').value);
+
+            if (!currentInput){
+                document.getElementById('winMeron').textContent =
+                    (myMeron * payoutMeron).toFixed(2);
+
+                document.getElementById('winWala').textContent =
+                    (myWala * payoutWala).toFixed(2);
+            }
+
+            const status = document.getElementById('betStatus');
+            status.textContent = data.status;
+            status.className = "status " + data.status;
+
+        }catch(e){
+            console.error(e);
+        }
+    }
+
+    setInterval(fetchGame,3000);
+    fetch('/api/place-bet')
+    fetchGame();
 </script>
 
 </body>

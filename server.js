@@ -10,6 +10,7 @@ const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const app = express();
 const allowedOrigin = 'https://letsplay-famw.onrender.com';
+const { placeBet } = require('./controllers/game');
 
 const loginLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 15 minutes
@@ -857,4 +858,22 @@ app.get('/api/my-wallet-transactions', isAuthenticated, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
+});
+
+// ==========================
+// PLACE BET API
+// ==========================
+app.post('/api/place-bet', isAuthenticated, async (req, res) => {
+
+    const userId = req.session.user.id;
+    const { side, amount } = req.body;
+
+    try {
+        const result = await placeBet(userId, side, Number(amount));
+        res.json(result);
+
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err.message });
+    }
 });
