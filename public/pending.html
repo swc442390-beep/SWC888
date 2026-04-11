@@ -303,6 +303,7 @@
         }
         // Call after session check
         checkSession();
+        loadPendingUsers();
         setInterval(loadWithdrawCount, 10000);
         setInterval(loadPendingCount, 10000);
     </script>
