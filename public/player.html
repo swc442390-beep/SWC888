@@ -95,7 +95,7 @@
                         </div>
 
                         <div class="row label-row">
-                            <div   div class="label-meron">MERON</div>
+                            <div class="label-meron">MERON</div>
                             <div class="label-wala">WALA</div>
                         </div>
 
@@ -199,8 +199,10 @@
 
             // 🔄 Refresh UI immediately
             document.getElementById('betAmount').value = '';
-            fetchGame();
-            checkPlayerBalance();
+            setTimeout(() => {
+                fetchGame();
+                checkPlayerBalance();
+            }, 300);
 
         } catch (err) {
             console.error(err);
@@ -244,19 +246,22 @@
             // avoid divide-by-zero
             payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
             payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
-            payoutDraw = data.totalDraw ? (totalPool / data.totalDraw) * CUT : 0;
+            const DRAW_MULTIPLIER = 8;
+            payoutDraw = DRAW_MULTIPLIER;
             document.getElementById('payoutMeron').textContent =
                 (payoutMeron * 100).toFixed(2);
 
             document.getElementById('payoutWala').textContent =
                 (payoutWala * 100).toFixed(2);
             document.getElementById('payoutDraw').textContent =
-                (payoutDraw * 100).toFixed(2);
+                payoutDraw + "x";
             const myMeron = Number(data.myMeron || 0);
             const myWala = Number(data.myWala || 0);
+            const myDraw = Number(data.myDraw || 0);
 
             document.getElementById('myMeron').textContent = myMeron;
             document.getElementById('myWala').textContent = myWala;
+            document.getElementById('myDraw').textContent = myDraw;
 
             // ✅ Only update win if no manual input (prevents override)
             const currentInput = Number(document.getElementById('betAmount').value);
@@ -267,6 +272,9 @@
 
                 document.getElementById('winWala').textContent =
                     (myWala * payoutWala).toFixed(2);
+
+                document.getElementById('winDraw').textContent =
+                    (myDraw * payoutDraw).toFixed(2);
             }
 
             const status = document.getElementById('betStatus');

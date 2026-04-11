@@ -927,7 +927,9 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
         `, [game.id, userId]);
 
         const my = myRes.rows[0];
-
+        if (winningSide === "DRAW") {
+            payout = betAmount * 8;
+        }
         // ✅ 4. RETURN DATA
         res.json({
             fightNumber: game.fight_number,
