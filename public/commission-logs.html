@@ -30,7 +30,7 @@
         </a>
 
         <div class="category">Settings</div>
-        <a href="account.html">👥 Account Management</a>
+        <!--<a href="account.html">👥 Account Management</a>-->
         <a href="change-password.html">🔑 Change Password</a>
         <a href="/api/logout">🚪 Logout</a>
     </div>
@@ -74,14 +74,120 @@
                 console.error(err);
                 window.location.href = '/';
             }
+            loadPendingCount();
+            loadWithdrawCount();
         }
 
+        
+
+        // =========================
+        // Hamburger & overlay
+        // =========================
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            const overlay = document.getElementById('overlay');
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active'); // show overlay
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
         }
 
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Close sidebar if click outside (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
+                    closeSidebar();
+                }
+            }
+        });
+        // =========================
+        // Load pending approvals count
+        // =========================
+        async function loadPendingCount() {
+            try {
+                const res = await fetch('/api/pending-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('pendingBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        // =========================
+        // Show snackbar
+        // =========================
+        function showSnackbar(message, type = "success") {
+            const snackbar = document.getElementById("snackbar");
+
+            snackbar.textContent = message;
+
+            // Reset classes
+            snackbar.className = "";
+
+            // Add type (success, error, warning)
+            snackbar.classList.add(type);
+
+            // Show
+            snackbar.classList.add("show");
+
+            // Hide after 3s
+            setTimeout(() => {
+                snackbar.classList.remove("show");
+            }, 3000);   
+        }
+
+        // =========================
+        // Load withdrawal request count
+        // =========================
+        async function loadWithdrawCount() {
+            try {
+                const res = await fetch('/api/withdrawal-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('withdrawBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        // Call after session check
         checkSession();
+        setInterval(loadWithdrawCount, 10000);
+        setInterval(loadPendingCount, 10000);
     </script>
 
 </body>

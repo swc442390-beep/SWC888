@@ -30,7 +30,7 @@
         </a>
 
         <div class="category">Settings</div>
-        <a href="account.html">👥 Account Management</a>
+        <!--<a href="account.html">👥 Account Management</a>-->
         <a href="change-password.html">🔑 Change Password</a>
         <a href="/api/logout">🚪 Logout</a>
     </div>
@@ -127,13 +127,9 @@
                 window.location.href = '/';
             }
             loadPendingCount();
-            setInterval(loadPendingCount, 10000);
+            loadWithdrawCount();
         }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
         // =========================
         // Hamburger & overlay
         // =========================
@@ -148,6 +144,25 @@
                 sidebar.classList.toggle('collapsed');
             }
         }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Close sidebar if click outside (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
+                    closeSidebar();
+                }
+            }
+        });
 
         // =========================
         // Load pending approvals count
@@ -173,24 +188,8 @@
                 console.error(err);
             }
         }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        }
-
-        // Close sidebar if click outside (mobile)
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
-                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
-                    closeSidebar();
-                }
-            }
-        });
+        // =========================
+        // Load commission withdrawal count 
         
         function showSnackbar(message, success = false) {
             const snackbar = document.getElementById("snackbar");
@@ -625,7 +624,34 @@
                 currency: 'PHP'
             }).format(amount);
         }
+        // =========================
+        // Load withdrawal request count
+        // =========================
+        async function loadWithdrawCount() {
+            try {
+                const res = await fetch('/api/withdrawal-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('withdrawBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        // Call after session check
         checkSession();
+        setInterval(loadWithdrawCount, 10000);
+        setInterval(loadPendingCount, 10000);
     </script>
 
 </body>

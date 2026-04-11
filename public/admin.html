@@ -31,7 +31,7 @@
         </a>
 
         <div class="category">Settings</div>
-        <a href="account.html">👥 Account Management</a>
+        <!--<a href="account.html">👥 Account Management</a>-->
         <a href="change-password.html">🔑 Change Password</a>
         <a href="/api/logout">🚪 Logout</a>
     </div>
@@ -168,11 +168,8 @@
             }
             loadPendingCount();
             loadWithdrawCount();
-
-
         }
-        checkSession();
-
+        
         // =========================
         // Hamburger & overlay
         // =========================
@@ -206,7 +203,28 @@
                 }
             }
         });
+        // =========================
+        // Show snackbar
+        // =========================
+        function showSnackbar(message, type = "success") {
+            const snackbar = document.getElementById("snackbar");
 
+            snackbar.textContent = message;
+
+            // Reset classes
+            snackbar.className = "";
+
+            // Add type (success, error, warning)
+            snackbar.classList.add(type);
+
+            // Show
+            snackbar.classList.add("show");
+
+            // Hide after 3s
+            setTimeout(() => {
+                snackbar.classList.remove("show");
+            }, 3000);
+        }
         // =========================
         // Copy link
         // =========================
@@ -241,33 +259,7 @@
                 console.error(err);
             }
         }
-        // =========================
-        // Show snackbar
-        // =========================
-        function showSnackbar(message, type = "success") {
-            const snackbar = document.getElementById("snackbar");
-
-            snackbar.textContent = message;
-
-            // Reset classes
-            snackbar.className = "";
-
-            // Add type (success, error, warning)
-            snackbar.classList.add(type);
-
-            // Show
-            snackbar.classList.add("show");
-
-            // Hide after 3s
-            setTimeout(() => {
-                snackbar.classList.remove("show");
-            }, 3000);
-
-            
-
-            
-            
-        }
+        
         async function loadDashboardWallets() {
             try {
                 const res = await fetch('/api/dashboard-wallets', { credentials: 'include' });
@@ -323,11 +315,11 @@
             }
         }
         // Call after session check
-            checkSession();
-            loadDashboardWallets();
-            setInterval(loadWithdrawCount, 10000);
-            setInterval(loadPendingCount, 10000);
-            setInterval(loadDashboardWallets, 10000); // refresh every 10 sec
+        checkSession();
+        loadDashboardWallets();
+        setInterval(loadWithdrawCount, 10000);
+        setInterval(loadPendingCount, 10000);
+        setInterval(loadDashboardWallets, 10000); // refresh every 10 sec
         
     </script>
 

@@ -30,7 +30,7 @@
         </a>
 
         <div class="category">Settings</div>
-        <a href="account.html">👥 Account Management</a>
+        <!--<a href="account.html">👥 Account Management</a>-->
         <a href="change-password.html">🔑 Change Password</a>
         <a href="/api/logout">🚪 Logout</a>
     </div>
@@ -114,7 +114,7 @@
                 window.location.href = '/';
             }
             loadPendingCount();
-            setInterval(loadPendingCount, 10000);
+            loadWithdrawCount();
         }
 
         function toggleSidebar() {
@@ -327,7 +327,34 @@
             closeModal();
             loadPlayers();
         }
+        // =========================
+        // Load withdrawal request count
+        // =========================
+        async function loadWithdrawCount() {
+            try {
+                const res = await fetch('/api/withdrawal-count', {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                const badge = document.getElementById('withdrawBadge');
+
+                if (data.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        // Call after session check
         checkSession();
+        setInterval(loadWithdrawCount, 10000);
+        setInterval(loadPendingCount, 10000);
     </script>
 
 </body>
