@@ -897,8 +897,10 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
                 status: "CLOSED",
                 totalMeron: 0,
                 totalWala: 0,
+                totalDraw: 0,
                 myMeron: 0,
-                myWala: 0
+                myWala: 0,
+                myDraw: 0
             });
         }
 
@@ -934,6 +936,7 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
             status: game.status,
             totalMeron: Number(totals.totalMeron),
             totalWala: Number(totals.totalWala),
+            totalDraw: Number(totals.totalDraw),
             myMeron: Number(my.myMeron),
             myWala: Number(my.myWala),
             myDraw: Number(my.myDraw)
