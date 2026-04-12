@@ -127,8 +127,8 @@
         <div class="half"><span id="totalWala">0</span><br>ODDS: <span id="payoutWala">0</span><br>PLAYERS BET: <span id="playerWala">0</span></div>
     </div>
      <div class="bet-buttons">
-        <button class="bet-btn bet-meron" onclick="placeBet('meron')">BET MERON</button>
-        <button class="bet-btn bet-wala" onclick="placeBet('wala')">BET WALA</button>
+        <button class="bet-btn bet-meron" onclick="placeBet('MERON')">BET MERON</button>
+        <button class="bet-btn bet-wala" onclick="placeBet('WALA')">BET WALA</button>
     </div>
     
     <!-- Current Balance -->
@@ -353,6 +353,36 @@
         }catch(e){
             console.error(e);
         }
+    }
+
+    async function placeBet(side){
+        const amount = Number(document.getElementById('betAmount').value);
+        if (game.status !== 'OPEN') {
+            throw new Error("Betting is closed");
+        }
+        if(!amount || amount <= 0){
+            alert("Enter valid amount");
+            return;
+        }
+
+        await fetch('/api/place-bet',{
+            method:'POST',
+            credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                side: side.toUpperCase(),
+                amount
+            })
+        });
+
+        document.getElementById('betAmount').value = '';
+    }
+    async function fetchBalance(){
+        const res = await fetch(`/api/wallet/${userId}`, {
+            credentials:'include'
+        });
+        const data = await res.json();
+        document.getElementById('balance').textContent = formatNumber(data.balance);
     }
     checkSession('declarator');
     setInterval(fetchGame, 3000);

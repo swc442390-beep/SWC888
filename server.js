@@ -887,9 +887,9 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
 
-        // ✅ 1. GET OPEN GAME
+        // ✅ 1. GET THE LATEST GAME
         const gameRes = await pool.query(
-            `SELECT * FROM games WHERE status='OPEN' ORDER BY created_at DESC LIMIT 1;`
+            `SELECT * FROM games ORDER BY created_at DESC LIMIT 1;`
         );
 
         if (gameRes.rows.length === 0) {

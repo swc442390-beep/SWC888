@@ -223,7 +223,9 @@
     async function placeBet(side){
         const amount = Number(document.getElementById('betAmount').value);
         const balance = Number(document.getElementById('balance').textContent);
-
+        if (game.status !== 'OPEN') {
+            throw new Error("Betting is closed");
+        }
         if (!amount || amount <= 0) {
             return showSnackbar("Enter valid amount", "warning");
         }
