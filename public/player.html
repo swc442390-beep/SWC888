@@ -92,8 +92,8 @@
                         </div>
 
                         <div class="row">
-                            <div class="total-box meron-bg">MERON: <span id="totalMeron">0</span></div>
-                            <div class="total-box wala-bg">WALA: <span id="totalWala">0</span></div>
+                            <div class="total-box meron-bg"><span id="totalMeron">0</span></div>
+                            <div class="total-box wala-bg"><span id="totalWala">0</span></div>
                         </div>
 
                         <div class="row label-row">
@@ -178,6 +178,13 @@
     let payoutWala = 0;
     let payoutDraw = 0;
     let lastStatus = null;
+    
+    function formatNumber(num) {
+        return Number(num || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 
     async function checkSession(requiredRole = null) {
         try {
@@ -277,9 +284,9 @@
             const data = await res.json();
 
             document.getElementById('fightNumber').textContent = data.fightNumber;
-            document.getElementById('totalMeron').textContent = data.totalMeron;
-            document.getElementById('totalWala').textContent = data.totalWala;
-            document.getElementById('totalDraw').textContent = data.totalDraw;
+            document.getElementById('totalMeron').textContent = formatNumber(data.totalMeron);
+            document.getElementById('totalWala').textContent = formatNumber(data.totalWala);
+            document.getElementById('totalDraw').textContent = formatNumber(data.totalDraw);
 
             const totalPool =
                 data.totalMeron +
