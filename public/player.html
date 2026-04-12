@@ -179,6 +179,35 @@
     let payoutDraw = 0;
     let lastStatus = null;
 
+    async function checkSession(requiredRole = null) {
+        try {
+            const res = await fetch('/api/dashboard', {
+                credentials: 'include'
+            });
+
+            if (res.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+
+            const data = await res.json();
+
+            // ✅ Set username
+            document.querySelectorAll('.username')
+                .forEach(el => el.textContent = data.username);
+
+            // 🔥 ROLE PROTECTION
+            if (requiredRole && data.role !== requiredRole) {
+                alert("Unauthorized access");
+                window.location.href = '/';
+            }
+
+        } catch (err) {
+            console.error(err);
+            window.location.href = '/';
+        }
+    }
+
     function setAmount(val){
         document.getElementById('betAmount').value = val;
         updatePreview();
@@ -451,7 +480,7 @@
 
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
-
+    checkSession('player');   
     fetchGame();
     checkPlayerBalance(); // ✅ initial load
 </script>

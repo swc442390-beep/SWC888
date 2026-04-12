@@ -194,132 +194,159 @@
 </div>
 
 <script>
+    async function checkSession(requiredRole = null) {
+        try {
+            const res = await fetch('/api/dashboard', {
+                credentials: 'include'
+            });
 
-function openStartModal(){
-    document.getElementById('startModal').style.display='flex';
-}
+            if (res.status === 401) {
+                window.location.href = '/';
+                return;
+            }
 
-function closeStartModal(){
-    document.getElementById('startModal').style.display='none';
-}
+            const data = await res.json();
 
-async function startGame(){
-    const fightNumber = document.getElementById('fightInput').value;
+            // ✅ Set username
+            document.querySelectorAll('.username')
+                .forEach(el => el.textContent = data.username);
 
-    await fetch('/api/declarator/start-game',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({fightNumber})
-    });
+            // 🔥 ROLE PROTECTION
+            if (requiredRole && data.role !== requiredRole) {
+                alert("Unauthorized access");
+                window.location.href = '/';
+            }
 
-    closeStartModal();
-}
-
-async function closeGame(){
-    await fetch('/api/declarator/close-game',{method:'POST'});
-}
-
-async function declareWinner(side){
-    await fetch('/api/declarator/declare-winner',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({winner:side})
-    });
-}
-
-async function setHeader(){
-    const message = document.getElementById('headerMessage').value;
-
-    await fetch('/api/declarator/set-header',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({message})
-    });
-}
-
-async function toggleStream(state){
-    await fetch('/api/declarator/toggle-stream',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({enabled:state})
-    });
-}
-
-async function placeChip(amount){
-    await fetch('/api/place-bet',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({amount, side:'MERON'})
-    });
-}
-
-/* SIDEBAR */
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-
-    if (window.innerWidth <= 768) {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-    } else {
-        sidebar.classList.toggle('collapsed');
+        } catch (err) {
+            console.error(err);
+            window.location.href = '/';
+        }
     }
-}
-
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('active');
-    document.getElementById('overlay').classList.remove('active');
-}
-let payoutMeron = 0;
-let payoutWala = 0;
-let payoutDraw = 0;
-
-async function fetchGame(){
-    const res = await fetch('/api/game-status',{credentials:'include'});
-    const data = await res.json();
-
-    document.getElementById('fightNumber').textContent = data.fightNumber;
-
-    document.getElementById('totalMeron').textContent = data.totalMeron;
-    document.getElementById('totalWala').textContent = data.totalWala;
-    document.getElementById('totalDraw').textContent = data.totalDraw || 0;
-
-    // PLAYER ONLY BETS
-    document.getElementById('playerMeron').textContent = data.playerMeron || 0;
-    document.getElementById('playerWala').textContent = data.playerWala || 0;
-    document.getElementById('playerDraw').textContent = data.playerDraw || 0;
-
-    const totalPool =
-        data.totalMeron +
-        data.totalWala +
-        (data.totalDraw || 0);
-
-    const CUT = 0.915;
-
-    payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
-    payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
-    payoutDraw = 8;
-
-    document.getElementById('payoutMeron').textContent = (payoutMeron * 100).toFixed(2);
-    document.getElementById('payoutWala').textContent = (payoutWala * 100).toFixed(2);
-    document.getElementById('payoutDraw').textContent = payoutDraw + "x";
-
-    const status = document.getElementById('betStatus');
-    status.textContent = data.status;
-    status.className = "status " + data.status;
-
-    // BUTTON LOGIC
-    const declareButtons = document.querySelectorAll('[onclick^="declareWinner"]');
-
-    if(data.status === 'CLOSED'){
-        declareButtons.forEach(btn=>btn.disabled = false);
-    } else {
-        declareButtons.forEach(btn=>btn.disabled = true);
+    function openStartModal(){
+        document.getElementById('startModal').style.display='flex';
     }
-}
 
-setInterval(fetchGame, 3000);
-fetchGame();
+    function closeStartModal(){
+        document.getElementById('startModal').style.display='none';
+    }
+
+    async function startGame(){
+        const fightNumber = document.getElementById('fightInput').value;
+
+        await fetch('/api/declarator/start-game',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({fightNumber})
+        });
+
+        closeStartModal();
+    }
+
+    async function closeGame(){
+        await fetch('/api/declarator/close-game',{method:'POST'});
+    }
+
+    async function declareWinner(side){
+        await fetch('/api/declarator/declare-winner',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({winner:side})
+        });
+    }
+
+    async function setHeader(){
+        const message = document.getElementById('headerMessage').value;
+
+        await fetch('/api/declarator/set-header',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({message})
+        });
+    }
+
+    async function toggleStream(state){
+        await fetch('/api/declarator/toggle-stream',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({enabled:state})
+        });
+    }
+
+    async function placeChip(amount){
+        await fetch('/api/place-bet',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({amount, side:'MERON'})
+        });
+    }
+
+    /* SIDEBAR */
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        } else {
+            sidebar.classList.toggle('collapsed');
+        }
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('overlay').classList.remove('active');
+    }
+    let payoutMeron = 0;
+    let payoutWala = 0;
+    let payoutDraw = 0;
+
+    async function fetchGame(){
+        const res = await fetch('/api/game-status',{credentials:'include'});
+        const data = await res.json();
+
+        document.getElementById('fightNumber').textContent = data.fightNumber;
+
+        document.getElementById('totalMeron').textContent = data.totalMeron;
+        document.getElementById('totalWala').textContent = data.totalWala;
+        document.getElementById('totalDraw').textContent = data.totalDraw || 0;
+
+        // PLAYER ONLY BETS
+        document.getElementById('playerMeron').textContent = data.playerMeron || 0;
+        document.getElementById('playerWala').textContent = data.playerWala || 0;
+        document.getElementById('playerDraw').textContent = data.playerDraw || 0;
+
+        const totalPool =
+            data.totalMeron +
+            data.totalWala +
+            (data.totalDraw || 0);
+
+        const CUT = 0.915;
+
+        payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
+        payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
+        payoutDraw = 8;
+
+        document.getElementById('payoutMeron').textContent = (payoutMeron * 100).toFixed(2);
+        document.getElementById('payoutWala').textContent = (payoutWala * 100).toFixed(2);
+        document.getElementById('payoutDraw').textContent = payoutDraw + "x";
+
+        const status = document.getElementById('betStatus');
+        status.textContent = data.status;
+        status.className = "status " + data.status;
+
+        // BUTTON LOGIC
+        const declareButtons = document.querySelectorAll('[onclick^="declareWinner"]');
+
+        if(data.status === 'CLOSED'){
+            declareButtons.forEach(btn=>btn.disabled = false);
+        } else {
+            declareButtons.forEach(btn=>btn.disabled = true);
+        }
+    }
+    checkSession('declarator');
+    setInterval(fetchGame, 3000);
+    fetchGame();
 </script>
 
 </body>
