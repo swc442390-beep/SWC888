@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const allowedOrigin = 'https://letsplay-famw.onrender.com';
 const { placeBet } = require('./controllers/game');
+const { startDummyEngine, stopDummyEngine } = require('./services/dummyEngine');
 
 const loginLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 15 minutes
@@ -930,6 +931,18 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
 
         const my = myRes.rows[0];
         
+        // ✅ 3. GET PLAYER BETS
+        const playerRes = await pool.query(`
+            SELECT
+                COALESCE(SUM(CASE WHEN side='MERON' THEN amount END),0) AS "playerMeron",
+                COALESCE(SUM(CASE WHEN side='WALA' THEN amount END),0) AS "playerWala",
+                COALESCE(SUM(CASE WHEN side='DRAW' THEN amount END),0) AS "playerDraw"
+            FROM bets
+            WHERE game_id = $1 AND AND is_dummy = false
+        `, [game.id]);
+
+        const playerBets = playerRes.rows[0];
+
         // ✅ 4. RETURN DATA
         res.json({
             fightNumber: game.fight_number,
@@ -939,7 +952,10 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
             totalDraw: Number(totals.totalDraw),
             myMeron: Number(my.myMeron),
             myWala: Number(my.myWala),
-            myDraw: Number(my.myDraw)
+            myDraw: Number(my.myDraw),
+            playerMeron: Number(playerBets.playerMeron),
+            playerWala: Number(playerBets.playerWala),
+            playerDraw: Number(playerBets.playerDraw)
         });
 
     } catch (err) {
@@ -1174,3 +1190,92 @@ app.post('/api/reject-withdrawal', isAuthenticated, async (req, res) => {
   }
 });
 
+// ==========================
+//  START GAME (DECLARATOR ONLY)
+// ==========================
+app.post('/api/start-game', isAuthenticated, async (req, res) => {
+  const { fightNumber } = req.body;
+
+  try {
+    if (req.session.user.role !== 'declarator') {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    // close any existing open game first (safety)
+    await pool.query(`
+      UPDATE games SET status='CLOSED'
+      WHERE status='OPEN'
+    `);
+
+    const result = await pool.query(`
+      INSERT INTO games (fight_number, status)
+      VALUES ($1, 'OPEN')
+      RETURNING *
+    `, [fightNumber]);
+
+    res.json({
+      message: "Game started",
+      game: result.rows[0]
+    });
+    startDummyEngine(req.session.user.id);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ==========================
+//  CLOSE GAME (DECLARATOR ONLY)
+// ==========================
+
+app.post('/api/close-game', isAuthenticated, async (req, res) => {
+  try {
+    if (req.session.user.role !== 'declarator') {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+    stopDummyEngine();
+    const result = await pool.query(`
+      UPDATE games
+      SET status='CLOSED'
+      WHERE status='OPEN'
+      RETURNING *
+    `);
+
+    res.json({
+      message: "Betting closed",
+      game: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ==========================
+//  DECLARE WINNER (DECLARATOR ONLY)
+// ==========================
+app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
+  const { winner } = req.body; 
+  // MERON | WALA | DRAW | CANCELLED
+  stopDummyEngine();
+  try {
+    if (req.session.user.role !== 'declarator') {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const result = await pool.query(`
+      UPDATE games
+      SET winner=$1, status='RESOLVED'
+      WHERE status='CLOSED'
+      RETURNING *
+    `, [winner]);
+
+    res.json({
+      message: "Winner declared",
+      game: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
