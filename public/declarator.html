@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Declarator Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.control-panel {
+    margin-top:15px;
+    padding:10px;
+    background:#0f172a;
+    border-radius:10px;
+}
+
+.control-panel button {
+    margin:5px;
+    padding:10px;
+    font-weight:bold;
+}
+
+.declare-btn { background:#f59e0b; }
+.start-btn { background:#22c55e; }
+.close-btn { background:#ef4444; }
+
+.chips button {
+    padding:8px 12px;
+    margin:3px;
+}
+</style>
+</head>
+
+<body class="dashboard-body">
+
+<div class="sidebar">
+    <h2>Welcome, Declarator</h2>
+
+    <a href="declarator.html">🏠 Dashboard</a>
+    <a href="#">📺 Video Stream</a>
+    <a href="#">⚙️ Settings</a>
+
+    <div class="category">Account</div>
+    <a href="change-password-declarator.html">🔑 Change Password</a>
+    <a href="/api/logout">🚪 Logout</a>
+</div>
+
+<div class="main">
+<div class="content">
+
+<h2>Game Control</h2>
+
+<div class="betting-card">
+
+    <!-- HEADER -->
+    <div class="row header-row">
+        <div>BETTING</div>
+        <div>FIGHT # <span id="fightNumber">0</span></div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="row">
+        <div>Status:</div>
+        <div id="betStatus">WAITING</div>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="row">
+        <div>MERON: <span id="totalMeron">0</span></div>
+        <div>WALA: <span id="totalWala">0</span></div>
+    </div>
+
+    <!-- PLAYER TOTAL -->
+    <div class="row">
+        <div style="width:100%; text-align:center;">
+            PLAYER TOTAL: <span id="playerTotal">0</span>
+        </div>
+    </div>
+
+    <!-- 🔥 DECLARATOR CHIPS -->
+    <div class="chips">
+        <button onclick="placeBet(5234)">5234</button>
+        <button onclick="placeBet(11332)">11332</button>
+        <button onclick="placeBet(22653)">22653</button>
+        <button onclick="placeBet(32759)">32759</button>
+        <button onclick="placeBet(52785)">52785</button>
+        <button onclick="placeBet(10488)">10488</button>
+    </div>
+
+    <!-- 🎮 CONTROL PANEL -->
+    <div class="control-panel">
+
+        <button class="start-btn" onclick="openStartModal()">START GAME</button>
+        <button class="close-btn" onclick="closeGame()">CLOSE GAME</button>
+
+        <br><br>
+
+        <button class="declare-btn" onclick="declareWinner('MERON')" disabled>MERON</button>
+        <button class="declare-btn" onclick="declareWinner('WALA')" disabled>WALA</button>
+        <button class="declare-btn" onclick="declareWinner('DRAW')" disabled>DRAW</button>
+        <button class="declare-btn" onclick="declareWinner('CANCELLED')" disabled>CANCEL</button>
+
+    </div>
+
+    <!-- ⚙️ SETTINGS -->
+    <div class="control-panel">
+        <h4>Player Controls</h4>
+
+        <input type="text" id="headerMessage" placeholder="Set header message" style="width:100%; padding:8px;">
+        <button onclick="setHeader()">Update Header</button>
+
+        <br><br>
+
+        <button onclick="toggleStream(true)">Stream ON</button>
+        <button onclick="toggleStream(false)">Stream OFF</button>
+    </div>
+
+</div>
+
+</div>
+</div>
+
+<!-- START GAME MODAL -->
+<div id="startModal" class="modal">
+    <div class="modal-content">
+        <h3>Start Game</h3>
+        <input type="number" id="fightInput" placeholder="Enter Fight Number">
+        <button onclick="startGame()">Start</button>
+        <button onclick="closeStartModal()">Cancel</button>
+    </div>
+</div>
+
+<script>
+
+function openStartModal(){
+    document.getElementById('startModal').style.display='flex';
+}
+
+function closeStartModal(){
+    document.getElementById('startModal').style.display='none';
+}
+
+async function startGame(){
+    const fightNumber = document.getElementById('fightInput').value;
+
+    await fetch('/api/declarator/start-game',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({fightNumber})
+    });
+
+    closeStartModal();
+}
+
+async function closeGame(){
+    await fetch('/api/declarator/close-game',{method:'POST'});
+}
+
+async function declareWinner(side){
+    await fetch('/api/declarator/declare-winner',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({winner:side})
+    });
+}
+
+async function setHeader(){
+    const message = document.getElementById('headerMessage').value;
+
+    await fetch('/api/declarator/set-header',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message})
+    });
+}
+
+async function toggleStream(state){
+    await fetch('/api/declarator/toggle-stream',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({enabled:state})
+    });
+}
+
+async function placeBet(amount){
+    await fetch('/api/place-bet',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({amount, side:'MERON'}) // selectable later
+    });
+}
+
+</script>
+
+</body>
+</html>
