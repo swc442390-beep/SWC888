@@ -1,6 +1,5 @@
 const pool = require('../db/connection');
 
-let interval = null;
 let running = false;
 
 /**
@@ -10,75 +9,142 @@ async function startDummyEngine(declaratorId) {
     if (running) return;
 
     running = true;
-
     console.log("🔥 Dummy engine started");
 
-    interval = setInterval(async () => {
-        try {
-            const gameRes = await pool.query(`
-                SELECT * FROM games
-                WHERE status='OPEN'
-                ORDER BY created_at DESC
-                LIMIT 1
-            `);
+    runWave(declaratorId);
+}
 
-            if (gameRes.rows.length === 0) {
-                stopDummyEngine();
-                return;
-            }
+/**
+ * MAIN LOOP (dynamic speed using setTimeout)
+ */
+async function runWave(declaratorId) {
+    if (!running) return;
 
-            const game = gameRes.rows[0];
+    try {
+        const gameRes = await pool.query(`
+            SELECT * FROM games
+            WHERE status='OPEN'
+            ORDER BY created_at DESC
+            LIMIT 1
+        `);
 
-            // 🎲 generate wave size (2k - 15k)
-            const waveTotal = randomRange(2000, 15000);
-
-            // 🎯 random bias shift per wave
-            const bias = Math.random();
-
-            let meronRatio, walaRatio, drawRatio;
-
-            if (bias < 0.45) {
-                meronRatio = randomRange(55, 65);
-                walaRatio = randomRange(30, 40);
-                drawRatio = randomRange(3, 8);
-            } else if (bias < 0.85) {
-                meronRatio = randomRange(40, 55);
-                walaRatio = randomRange(40, 55);
-                drawRatio = randomRange(1, 5);
-            } else {
-                meronRatio = randomRange(30, 45);
-                walaRatio = randomRange(50, 65);
-                drawRatio = randomRange(1, 5);
-            }
-
-            const totalPercent = meronRatio + walaRatio + drawRatio;
-
-            const meron = Math.floor((waveTotal * meronRatio) / totalPercent);
-            const wala = Math.floor((waveTotal * walaRatio) / totalPercent);
-            const draw = Math.max(0, waveTotal - meron - wala);
-
-            // 💾 insert dummy bets
-            await insertDummyBet(game.id, declaratorId, 'MERON', meron);
-            await insertDummyBet(game.id, declaratorId, 'WALA', wala);
-
-            if (Math.random() < 0.25) {
-                await insertDummyBet(game.id, declaratorId, 'DRAW', draw);
-            }
-
-            console.log(`Wave injected: M:${meron} W:${wala} D:${draw}`);
-
-        } catch (err) {
-            console.error("Dummy engine error:", err);
+        if (gameRes.rows.length === 0) {
+            stopDummyEngine();
+            return;
         }
-    }, randomRange(8000, 15000)); // wave interval
+
+        const game = gameRes.rows[0];
+
+        // ⏱ GAME TIME
+        const startTime = new Date(game.created_at).getTime();
+        const elapsed = (Date.now() - startTime) / 1000;
+
+        let intervalSpeed;
+        let minBet, maxBet;
+
+        // 🟢 EARLY: fast + small
+        if (elapsed < 30) {
+            intervalSpeed = randomRange(300, 800);
+            minBet = 20;
+            maxBet = 200;
+
+        // 🟡 MID: balanced
+        } else if (elapsed < 90) {
+            intervalSpeed = randomRange(800, 2000);
+            minBet = 100;
+            maxBet = 800;
+
+        // 🔴 LATE: slow + random (small OR medium)
+        } else {
+            intervalSpeed = randomRange(1500, 4000);
+
+            if (Math.random() < 0.5) {
+                minBet = 50;
+                maxBet = 300;
+            } else {
+                minBet = 300;
+                maxBet = 1500;
+            }
+
+            // 💥 rare spike
+            if (Math.random() < 0.1) {
+                minBet = 2000;
+                maxBet = 8000;
+            }
+        }
+
+        // 🎲 WAVE SIZE
+        const waveTotal = randomRange(minBet, maxBet);
+
+        // 🎯 BIAS
+        const bias = Math.random();
+
+        let meronRatio, walaRatio, drawRatio;
+
+        if (bias < 0.45) {
+            meronRatio = randomRange(55, 65);
+            walaRatio = randomRange(30, 40);
+            drawRatio = randomRange(3, 8);
+        } else if (bias < 0.85) {
+            meronRatio = randomRange(40, 55);
+            walaRatio = randomRange(40, 55);
+            drawRatio = randomRange(1, 5);
+        } else {
+            meronRatio = randomRange(30, 45);
+            walaRatio = randomRange(50, 65);
+            drawRatio = randomRange(1, 5);
+        }
+
+        const totalPercent = meronRatio + walaRatio + drawRatio;
+
+        const meron = Math.floor((waveTotal * meronRatio) / totalPercent);
+        const wala = Math.floor((waveTotal * walaRatio) / totalPercent);
+        const draw = Math.max(0, waveTotal - meron - wala);
+
+        // 🔥 MICRO BET FLOW
+        await injectMicroBets(game.id, declaratorId, 'MERON', meron, elapsed);
+        await injectMicroBets(game.id, declaratorId, 'WALA', wala, elapsed);
+
+        if (Math.random() < 0.25) {
+            await injectMicroBets(game.id, declaratorId, 'DRAW', draw, elapsed);
+        }
+
+        console.log(`Wave | ${elapsed.toFixed(1)}s | M:${meron} W:${wala} D:${draw}`);
+
+        // 🔁 LOOP
+        setTimeout(() => runWave(declaratorId), intervalSpeed);
+
+    } catch (err) {
+        console.error("Dummy engine error:", err);
+        setTimeout(() => runWave(declaratorId), 1000);
+    }
+}
+
+/**
+ * MICRO BETS (smooth realistic flow)
+ */
+async function injectMicroBets(gameId, declaratorId, side, totalAmount, elapsed) {
+    let remaining = totalAmount;
+
+    while (remaining > 0) {
+        const chunk = Math.min(remaining, randomRange(20, 300));
+        remaining -= chunk;
+
+        await insertDummyBet(gameId, declaratorId, side, chunk);
+
+        // ⏱ dynamic delay (faster early, slower late)
+        const delay = elapsed > 90
+            ? randomRange(100, 400)
+            : randomRange(50, 150);
+
+        await new Promise(res => setTimeout(res, delay));
+    }
 }
 
 /**
  * STOP ENGINE
  */
 function stopDummyEngine() {
-    if (interval) clearInterval(interval);
-    interval = null;
     running = false;
     console.log("🛑 Dummy engine stopped");
 }
@@ -96,7 +162,7 @@ async function insertDummyBet(gameId, declaratorId, side, amount) {
 }
 
 /**
- * RANDOM RANGE HELPER
+ * RANDOM HELPER
  */
 function randomRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
