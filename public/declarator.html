@@ -3,38 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Declarator Dashboard</title>
+<title>Declarator - Pitwarriors619</title>
 <link rel="stylesheet" href="style.css">
 
 <style>
-.control-panel {
-    margin-top:15px;
-    padding:10px;
-    background:#0f172a;
+.video-container { width:100%; aspect-ratio:16/9; margin-bottom:15px; }
+.video-container iframe { width:100%; height:100%; border:none; }
+
+.betting-card { background:#1e293b; border-radius:12px; padding:15px; }
+
+.row { display:flex; justify-content:space-between; margin-bottom:8px; }
+.header-row { font-weight:bold; color:#14b8a6; }
+
+.status.OPEN { color:#2ecc71; }
+.status.CLOSED { color:#f1c40f; }
+.status.CANCELLED { color:#e74c3c; }
+
+.total-box { width:48%; padding:10px; border-radius:6px; font-weight:bold; }
+.meron-bg { background:#7f1d1d; }
+.wala-bg { background:#1e3a8a; }
+
+.label-row div { width:50%; text-align:center; padding:10px; font-weight:bold; }
+.label-meron { background:#dc2626; }
+.label-wala { background:#2563eb; }
+
+.half { width:50%; text-align:center; }
+
+.bet-buttons { display:flex; gap:10px; margin-top:10px; }
+.bet-btn { flex:1; padding:12px; font-weight:bold; }
+
+.balance-box { margin-top:10px; padding:10px; background:#0f172a; border:1px solid #14b8a6; border-radius:6px; text-align:center; }
+
+.chips { display:flex; gap:5px; overflow-x:auto; margin-top:10px; }
+.chips button { padding:6px 10px; font-size:12px; }
+
+.control-panel { margin-top:10px; }
+.control-panel button { width:100%; margin-top:5px; padding:10px; font-weight:bold; }
+
+.modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+}
+.modal-content {
+    background:#1e293b;
+    padding:20px;
     border-radius:10px;
-}
-
-.control-panel button {
-    margin:5px;
-    padding:10px;
-    font-weight:bold;
-}
-
-.declare-btn { background:#f59e0b; }
-.start-btn { background:#22c55e; }
-.close-btn { background:#ef4444; }
-
-.chips button {
-    padding:8px 12px;
-    margin:3px;
 }
 </style>
 </head>
 
 <body class="dashboard-body">
 
-<div class="sidebar">
-    <h2>Welcome, Declarator</h2>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h2>Welcome, <span class="username">Declarator</span></h2>
 
     <a href="declarator.html">🏠 Dashboard</a>
     <a href="#">📺 Video Stream</a>
@@ -45,11 +72,28 @@
     <a href="/api/logout">🚪 Logout</a>
 </div>
 
+<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+
 <div class="main">
+<div class="header">
+    <div class="hamburger" onclick="toggleSidebar()">☰</div>
+</div>
+
 <div class="content">
 
-<h2>Game Control</h2>
+<div id="snackbar"></div>
 
+<div class="game-layout">
+
+<!-- VIDEO (UNCHANGED) -->
+<div class="video-section">
+    <div class="video-container">
+        <iframe src="https://wc3.sputnikview.live/hls/stream/index.m3u8" allowfullscreen></iframe>
+    </div>
+</div>
+
+<!-- BETTING / CONTROL -->
+<div class="betting-section">
 <div class="betting-card">
 
     <!-- HEADER -->
@@ -61,13 +105,13 @@
     <!-- STATUS -->
     <div class="row">
         <div>Status:</div>
-        <div id="betStatus">WAITING</div>
+        <div id="betStatus" class="status OPEN">WAITING</div>
     </div>
 
     <!-- TOTALS -->
     <div class="row">
-        <div>MERON: <span id="totalMeron">0</span></div>
-        <div>WALA: <span id="totalWala">0</span></div>
+        <div class="total-box meron-bg">MERON: <span id="totalMeron">0</span></div>
+        <div class="total-box wala-bg">WALA: <span id="totalWala">0</span></div>
     </div>
 
     <!-- PLAYER TOTAL -->
@@ -77,54 +121,55 @@
         </div>
     </div>
 
-    <!-- 🔥 DECLARATOR CHIPS -->
+    <!-- CHIPS -->
     <div class="chips">
-        <button onclick="placeBet(5234)">5234</button>
-        <button onclick="placeBet(11332)">11332</button>
-        <button onclick="placeBet(22653)">22653</button>
-        <button onclick="placeBet(32759)">32759</button>
-        <button onclick="placeBet(52785)">52785</button>
-        <button onclick="placeBet(10488)">10488</button>
+        <button onclick="placeChip(5234)">5234</button>
+        <button onclick="placeChip(11332)">11332</button>
+        <button onclick="placeChip(22653)">22653</button>
+        <button onclick="placeChip(32759)">32759</button>
+        <button onclick="placeChip(52785)">52785</button>
+        <button onclick="placeChip(10488)">10488</button>
     </div>
 
-    <!-- 🎮 CONTROL PANEL -->
-    <div class="control-panel">
-
-        <button class="start-btn" onclick="openStartModal()">START GAME</button>
-        <button class="close-btn" onclick="closeGame()">CLOSE GAME</button>
-
-        <br><br>
-
-        <button class="declare-btn" onclick="declareWinner('MERON')" disabled>MERON</button>
-        <button class="declare-btn" onclick="declareWinner('WALA')" disabled>WALA</button>
-        <button class="declare-btn" onclick="declareWinner('DRAW')" disabled>DRAW</button>
-        <button class="declare-btn" onclick="declareWinner('CANCELLED')" disabled>CANCEL</button>
-
+    <!-- CONTROL BUTTONS -->
+    <div class="bet-buttons">
+        <button class="bet-btn" style="background:#22c55e;" onclick="openStartModal()">START GAME</button>
+        <button class="bet-btn" style="background:#ef4444;" onclick="closeGame()">CLOSE GAME</button>
     </div>
 
-    <!-- ⚙️ SETTINGS -->
-    <div class="control-panel">
-        <h4>Player Controls</h4>
+    <div class="bet-buttons">
+        <button class="bet-btn" onclick="declareWinner('MERON')" disabled>MERON</button>
+        <button class="bet-btn" onclick="declareWinner('WALA')" disabled>WALA</button>
+        <button class="bet-btn" onclick="declareWinner('DRAW')" disabled>DRAW</button>
+        <button class="bet-btn" onclick="declareWinner('CANCELLED')" disabled>CANCEL</button>
+    </div>
 
-        <input type="text" id="headerMessage" placeholder="Set header message" style="width:100%; padding:8px;">
+    <!-- SETTINGS -->
+    <div class="control-panel">
+        <input type="text" id="headerMessage" placeholder="Header message" style="width:100%; padding:8px;">
         <button onclick="setHeader()">Update Header</button>
-
-        <br><br>
 
         <button onclick="toggleStream(true)">Stream ON</button>
         <button onclick="toggleStream(false)">Stream OFF</button>
     </div>
 
 </div>
+</div>
 
 </div>
+</div>
+
+<footer>
+    © 2024 Pitwarriors619. All rights reserved.
+</footer>
+
 </div>
 
 <!-- START GAME MODAL -->
 <div id="startModal" class="modal">
     <div class="modal-content">
         <h3>Start Game</h3>
-        <input type="number" id="fightInput" placeholder="Enter Fight Number">
+        <input type="number" id="fightInput" placeholder="Fight Number">
         <button onclick="startGame()">Start</button>
         <button onclick="closeStartModal()">Cancel</button>
     </div>
@@ -182,12 +227,30 @@ async function toggleStream(state){
     });
 }
 
-async function placeBet(amount){
+async function placeChip(amount){
     await fetch('/api/place-bet',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({amount, side:'MERON'}) // selectable later
+        body:JSON.stringify({amount, side:'MERON'})
     });
+}
+
+/* SIDEBAR */
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('active');
+    document.getElementById('overlay').classList.remove('active');
 }
 
 </script>
