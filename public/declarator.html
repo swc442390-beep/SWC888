@@ -204,6 +204,12 @@
 </div>
 
 <script>
+    function formatNumber(num) {
+        return Number(num || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
     async function checkSession(requiredRole = null) {
         try {
             const res = await fetch('/api/dashboard', {
