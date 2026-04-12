@@ -284,11 +284,7 @@
     }
 
     async function placeChip(amount){
-        await fetch('/api/place-bet',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({amount, side:'MERON'})
-        });
+        document.getElementById('betAmount').value = amount;
     }
 
     /* SIDEBAR */

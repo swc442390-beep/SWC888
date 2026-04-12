@@ -217,7 +217,6 @@
 
     function setAmount(val){
         document.getElementById('betAmount').value = val;
-        updatePreview();
     }
 
     async function placeBet(side){
@@ -264,19 +263,6 @@
         }
     }
 
-    // 🔥 LIVE PREVIEW
-    function updatePreview(){
-        const amount = Number(document.getElementById('betAmount').value) || 0;
-
-        document.getElementById('winMeron').textContent =
-            (amount * payoutMeron).toFixed(2);
-
-        document.getElementById('winWala').textContent =
-            (amount * payoutWala).toFixed(2);
-
-        document.getElementById('winDraw').textContent =
-            (amount * payoutDraw).toFixed(2);
-    }
 
     document.getElementById('betAmount').addEventListener('input', updatePreview);
     // 🔥 LIVE GAME STATUS
