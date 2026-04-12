@@ -332,10 +332,8 @@
         // PLAYER ONLY BETS
         document.getElementById('playerMeron').textContent = formatNumber(data.playerMeron || 0);
         document.getElementById('playerWala').textContent = formatNumber(data.playerWala || 0);
-        document.getElementById('playerDraw').textContent = formatNumber(data.playerDraw || 0);
-
-        document.getElementById('balance').textContent = formatNumber(balance);
-        document.getElementById('playerTotal').textContent = formatNumber(playerTotal);
+        
+        
         const totalMeron = Number(data.totalMeron) || 0;
         const totalWala = Number(data.totalWala) || 0;
         const totalDraw = Number(data.totalDraw) || 0;
