@@ -328,15 +328,17 @@
 
         document.getElementById('fightNumber').textContent = data.fightNumber;
 
-        document.getElementById('totalMeron').textContent = data.totalMeron;
-        document.getElementById('totalWala').textContent = data.totalWala;
-        document.getElementById('totalDraw').textContent = data.totalDraw || 0;
+        document.getElementById('totalMeron').textContent = formatNumber(data.totalMeron);
+        document.getElementById('totalWala').textContent = formatNumber(data.totalWala);
+        document.getElementById('totalDraw').textContent = formatNumber(data.totalDraw || 0);
 
         // PLAYER ONLY BETS
-        document.getElementById('playerMeron').textContent = data.playerMeron || 0;
-        document.getElementById('playerWala').textContent = data.playerWala || 0;
-        document.getElementById('playerDraw').textContent = data.playerDraw || 0;
+        document.getElementById('playerMeron').textContent = formatNumber(data.playerMeron || 0);
+        document.getElementById('playerWala').textContent = formatNumber(data.playerWala || 0);
+        document.getElementById('playerDraw').textContent = formatNumber(data.playerDraw || 0);
 
+        document.getElementById('balance').textContent = formatNumber(balance);
+        document.getElementById('playerTotal').textContent = formatNumber(playerTotal);
         const totalPool =
             data.totalMeron +
             data.totalWala +
@@ -348,8 +350,8 @@
         payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
         payoutDraw = 8;
 
-        document.getElementById('payoutMeron').textContent = (payoutMeron * 100).toFixed(2);
-        document.getElementById('payoutWala').textContent = (payoutWala * 100).toFixed(2);
+        document.getElementById('payoutMeron').textContent = formatNumber(payoutMeron * 100);
+        document.getElementById('payoutWala').textContent = formatNumber(payoutWala * 100);
         document.getElementById('payoutDraw').textContent = payoutDraw + "x";
 
         const status = document.getElementById('betStatus');
