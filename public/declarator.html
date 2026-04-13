@@ -384,15 +384,12 @@
             // ✅ ENABLE DECLARE BUTTONS
             const declareButtons = document.querySelectorAll('[onclick^="declareWinner"]');
 
-            if(data.status === 'CLOSED'){
-                declareButtons.forEach(btn=>btn.disabled = false);
+            if (data.status === 'CLOSED') {
+                // ✅ Allow declaring winner ONLY when CLOSED
+                declareButtons.forEach(btn => btn.disabled = false);
             } else {
-                declareButtons.forEach(btn=>btn.disabled = true);
-            }
-
-            if(data.status === 'RESOLVED'){
-                // optionally reset UI or disable everything
-                declareButtons.forEach(btn=>btn.disabled = true);
+                // ❌ Disable in ALL other states (OPEN, RESOLVED, CANCELLED, etc.)
+                declareButtons.forEach(btn => btn.disabled = true);
             }
             game = data;
         }catch(e){
