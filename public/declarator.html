@@ -55,6 +55,10 @@
     padding:20px;
     border-radius:10px;
 }
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 </style>
 </head>
 
@@ -382,14 +386,20 @@
             status.className = "status " + data.status;
 
             // ✅ ENABLE DECLARE BUTTONS
-            const declareButtons = document.querySelectorAll('[onclick^="declareWinner"]');
+            const declareButtons = document.querySelectorAll('.declare-btn');
 
             if (data.status === 'CLOSED') {
-                // ✅ Allow declaring winner ONLY when CLOSED
-                declareButtons.forEach(btn => btn.disabled = false);
+                declareButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = 1;
+                    btn.style.pointerEvents = "auto";
+                });
             } else {
-                // ❌ Disable in ALL other states (OPEN, RESOLVED, CANCELLED, etc.)
-                declareButtons.forEach(btn => btn.disabled = true);
+                declareButtons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = 0.5;
+                    btn.style.pointerEvents = "none"; // 🔥 THIS FIXES YOUR ISSUE
+                });
             }
             game = data;
         }catch(e){
