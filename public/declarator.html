@@ -48,6 +48,7 @@
     background:rgba(0,0,0,0.6);
     justify-content:center;
     align-items:center;
+    z-index: 9999; /* ✅ ADD THIS */
 }
 .modal-content {
     background:#1e293b;
@@ -194,6 +195,9 @@
 </div>
 
 <script>
+    let game = {};
+    let userId = null;
+
     function formatNumber(num) {
         return Number(num || 0).toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -205,7 +209,7 @@
             const res = await fetch('/api/dashboard', {
                 credentials: 'include'
             });
-
+            
             if (res.status === 401) {
                 window.location.href = '/';
                 return;
@@ -216,6 +220,8 @@
             // ✅ Set username
             document.querySelectorAll('.username')
                 .forEach(el => el.textContent = data.username);
+            
+            userId = data.id; 
 
             // 🔥 ROLE PROTECTION
             if (requiredRole && data.role !== requiredRole) {
@@ -237,32 +243,70 @@
     }
 
     async function startGame(){
-        const fightNumber = document.getElementById('fightInput').value;
+        try {
+            const fightNumber = document.getElementById('fightInput').value;
 
-        await fetch('/api/start-game', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ fightNumber })
-        });
+            const res = await fetch('/api/start-game', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ fightNumber })
+            });
 
-        closeStartModal();
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || "Failed to start game");
+                return;
+            }
+
+            alert("Game started!");
+            closeStartModal();
+
+        } catch (err) {
+            console.error(err);
+            alert("Network error");
+        }
     }
 
     async function closeGame(){
-    await fetch('/api/close-game', {
-        method: 'POST',
-        credentials: 'include'
-    });
-}
+        const res = await fetch('/api/close-game', {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || "Failed to close game");
+            return;
+        }
+
+        alert("Game closed!");
+    }
+
 
     async function declareWinner(side){
-        await fetch('/api/declare-winner', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ winner: side })
-        });
+        try {
+            const res = await fetch('/api/declare-winner', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ winner: side })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || "Failed to declare winner");
+                return;
+            }
+
+            alert("Winner declared!");
+        } catch (err) {
+            console.error(err);
+            alert("Network error");
+        }
     }
 
     async function setHeader(){
@@ -346,6 +390,11 @@
                 declareButtons.forEach(btn=>btn.disabled = true);
             }
 
+            if(data.status === 'RESOLVED'){
+                // optionally reset UI or disable everything
+                declareButtons.forEach(btn=>btn.disabled = true);
+            }
+            game = data;
         }catch(e){
             console.error(e);
         }

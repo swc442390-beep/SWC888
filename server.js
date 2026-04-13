@@ -23,6 +23,31 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,  // disable X-RateLimit-* headers
 });
 
+
+// ==========================
+// HELPER FUNCTIONS (ADD HERE)
+// ==========================
+
+const upsertActiveGame = async (gameId, eventName, message) => {
+  const check = await pool.query(`SELECT * FROM active_game WHERE id = 1`);
+
+  if (check.rows.length === 0) {
+    await pool.query(`
+      INSERT INTO active_game (id, game_id, event_name, message)
+      VALUES (1, $1, $2, $3)
+    `, [gameId, eventName, message]);
+  } else {
+    await pool.query(`
+      UPDATE active_game
+      SET game_id = $1,
+          event_name = $2,
+          message = $3,
+          updated_at = NOW()
+      WHERE id = 1
+    `, [gameId, eventName, message]);
+  }
+};
+
 // ==========================
 // MIDDLEWARE
 // ==========================
