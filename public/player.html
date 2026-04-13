@@ -145,6 +145,9 @@
                             <div class="total-box" style="background:#374151; width:100%;">
                                 DRAW: <span id="totalDraw">0</span>
                             </div>
+                        </div>
+
+                        <div class="row">
                             <div class="half">PAYOUT: <span id="payoutDraw">0</span></div>
                             <div class="half">
                                 Your Bet: <span id="myDraw">0</span><br>
@@ -224,7 +227,7 @@
         const amount = Number(document.getElementById('betAmount').value);
         const balance = Number(document.getElementById('balance').textContent);
         if (game.status !== 'OPEN') {
-            throw new Error("Betting is closed");
+            return showSnackbar("Betting is closed", "warning");
         }
         if (!amount || amount <= 0) {
             return showSnackbar("Enter valid amount", "warning");
@@ -320,12 +323,15 @@
             }
 
             const status = document.getElementById('betStatus');
-            status.textContent = data.status;
-            status.className = "status " + data.status;
+            const gameStatus = (data.status || "CLOSED").toUpperCase();
+
+            status.textContent = gameStatus;
+            status.className = "status " + gameStatus;
+            game.status = gameStatus;
             if (data.status !== lastStatus) {
 
-                if(data.status !== 'OPEN'){
-                    disableBetting("Betting is closed");
+                if (gameStatus !== 'OPEN') {
+                    disableBetting("Betting is " + gameStatus);
                 } else {
                     document.querySelectorAll('.bet-btn').forEach(btn=>{
                         btn.disabled = false;
