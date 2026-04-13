@@ -229,7 +229,7 @@ button:disabled {
 
             // 🔥 ROLE PROTECTION
             if (requiredRole && data.role !== requiredRole) {
-                alert("Unauthorized access");
+                showSnackbar("Unauthorized access");
                 window.location.href = '/';
             }
 
@@ -260,16 +260,16 @@ button:disabled {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.error || "Failed to start game");
+                showSnackbar(data.error || "Failed to start game");
                 return;
             }
 
-            alert("Game started!");
+            showSnackbar("Game started!");
             closeStartModal();
 
         } catch (err) {
             console.error(err);
-            alert("Network error");
+            showSnackbar("Network error");
         }
     }
 
@@ -282,11 +282,11 @@ button:disabled {
         const data = await res.json();
 
         if (!res.ok) {
-            alert(data.error || "Failed to close game");
+            showSnackbar(data.error || "Failed to close game");
             return;
         }
 
-        alert("Game closed!");
+        showSnackbar("Game closed!");
     }
 
 
@@ -302,14 +302,14 @@ button:disabled {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.error || "Failed to declare winner");
+                showSnackbar(data.error || "Failed to declare winner");
                 return;
             }
 
-            alert("Winner declared!");
+            showSnackbar("Winner declared!");
         } catch (err) {
             console.error(err);
-            alert("Network error");
+            showSnackbar("Network error");
         }
     }
 
@@ -413,7 +413,7 @@ button:disabled {
             throw new Error("Betting is closed");
         }
         if(!amount || amount <= 0){
-            alert("Enter valid amount");
+            showSnackbar("Enter valid amount");
             return;
         }
 
@@ -435,6 +435,23 @@ button:disabled {
         });
         const data = await res.json();
         document.getElementById('balance').textContent = formatNumber(data.balance);
+    }
+    // 📢 SHOW SNACKBAR
+    function showSnackbar(message, type = "success") {
+        const sb = document.getElementById("snackbar");
+
+        sb.className = ""; // RESET
+
+        sb.textContent = message;
+
+        if(type === "error") sb.classList.add("error");
+        if(type === "warning") sb.classList.add("warning");
+
+        sb.classList.add("show");
+
+        setTimeout(()=>{
+            sb.classList.remove("show");
+        },3000);
     }
     checkSession('declarator');
     setInterval(fetchGame, 3000);
