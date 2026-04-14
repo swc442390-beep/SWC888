@@ -527,13 +527,13 @@ button:disabled {
     }
     // 📢 SET GAME DETAILS (FOR NOW JUST EVENT NAME)
     async function setGameDetails(){
-        const eventName = prompt("Enter Event Name:");
-        if(!eventName) return;
+        const event_name = prompt("Enter Event Name:");
+        if(!event_name) return;
 
         await fetch('/api/declarator/set-event',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ event_name: eventName })
+            body: JSON.stringify({ event_name })
         });
 
         showSnackbar("Event updated!");
@@ -545,7 +545,7 @@ button:disabled {
             const data = await res.json();
 
             if(data.event_name){
-                document.getElementById('eventName').textContent = data.event_name;
+                document.getElementById('event_name').textContent = data.event_name;
             }
 
             if(data.announcement){

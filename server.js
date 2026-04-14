@@ -28,14 +28,14 @@ const loginLimiter = rateLimit({
 // HELPER FUNCTIONS (ADD HERE)
 // ==========================
 
-const upsertActiveEvent = async ({ gameId, eventName, announcement, status }) => {
+const upsertActiveEvent = async ({ gameId, event_name, announcement, status }) => {
   const check = await pool.query(`SELECT * FROM active_event WHERE id = 1`);
 
   if (check.rows.length === 0) {
     await pool.query(`
       INSERT INTO active_event (id, game_id, event_name, announcement, status)
       VALUES (1, $1, $2, $3, $4)
-    `, [gameId, eventName, announcement, status || 'ACTIVE']);
+    `, [gameId, event_name, announcement, status || 'ACTIVE']);
   } else {
     await pool.query(`
       UPDATE active_event
@@ -45,7 +45,7 @@ const upsertActiveEvent = async ({ gameId, eventName, announcement, status }) =>
           status = $4,
           updated_at = NOW()
       WHERE id = 1
-    `, [gameId, eventName, announcement, status || 'ACTIVE']);
+    `, [gameId, event_name, announcement, status || 'ACTIVE']);
   }
 };
 
@@ -271,11 +271,7 @@ app.use(express.static('public', {
   }
 }));
 
-// ==========================
-// START SERVER
-// ==========================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 // ==========================
 // DASHBOARD API (FIXED)
@@ -1241,7 +1237,7 @@ app.post('/api/start-game', isAuthenticated, async (req, res) => {
 
     await upsertActiveEvent({
       gameId: result.rows[0].id,
-      eventName: "Pitwarriors619", // or keep existing
+      event_name: "Pitwarriors619", // or keep existing
       announcement: `Game Started - Fight #${fightNumber}`,
       status: 'ACTIVE'
     });
@@ -1294,7 +1290,7 @@ app.post('/api/close-game', isAuthenticated, async (req, res) => {
 
     await upsertActiveEvent({
       gameId: game.id,
-      eventName: null,
+      event_name: null,
       announcement: `Betting Closed`,
       status: 'ACTIVE'
     });
@@ -1333,7 +1329,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     }
     await upsertActiveEvent({
       gameId: result.rows[0].id,
-      eventName: null,
+      event_name: null,
       announcement: `Winner: ${winner}`,
       status: 'ACTIVE'
     });
@@ -1387,14 +1383,14 @@ app.post('/api/declarator/set-header', isAuthenticated, async (req, res) => {
 //  SET EVENT NAME API (DECLARATOR ONLY)
 // ==========================
 app.post('/api/declarator/set-event-name', isAuthenticated, async (req, res) => {
-  const { eventName } = req.body;
+  const { event_name } = req.body;
 
   try {
     await pool.query(`
       UPDATE active_event
       SET event_name = $1, updated_at = NOW()
       WHERE id = 1
-    `, [eventName]);
+    `, [event_name]);
 
     res.json({ message: "Event name updated" });
   } catch (err) {
@@ -1402,3 +1398,27 @@ app.post('/api/declarator/set-event-name', isAuthenticated, async (req, res) => 
     res.status(500).json({ error: "Server error" });
   }
 });
+// ==========================
+// SET EVENT NAME API (DECLARATOR ONLY)
+// ==========================
+app.post('/api/declarator/set-event', isAuthenticated, async (req, res) => {
+  const { event_name } = req.body;
+
+  try {
+    await pool.query(`
+      UPDATE active_event
+      SET event_name = $1, updated_at = NOW()
+      WHERE id = 1
+    `, [event_name]);
+
+    res.json({ message: "Event updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ==========================
+// START SERVER
+// ==========================
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
