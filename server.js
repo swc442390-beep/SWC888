@@ -31,6 +31,11 @@ const loginLimiter = rateLimit({
 const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
   const check = await pool.query(`SELECT * FROM active_event WHERE id = 1`);
 
+  // ✅ Use existing event_name if not provided
+  if (!event_name && check.rows.length > 0) {
+    event_name = check.rows[0].event_name;
+  }
+
   if (check.rows.length === 0) {
     await pool.query(`
       INSERT INTO active_event (id, game_id, event_name, announcement)
@@ -44,7 +49,7 @@ const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
           announcement = $3,
           updated_at = NOW()
       WHERE id = 1
-    `, [gameId, event_name, announcement);
+    `, [gameId, event_name, announcement]);
   }
 };
 
