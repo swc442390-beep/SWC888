@@ -496,12 +496,50 @@
             showSnackbar(err.message, "error");
         }
     }
+    // 📢 FETCH ACTIVE EVENT
+    async function fetchEvent(){
+        try{
+            const res = await fetch('/api/active-event');
+            const data = await res.json();
 
+            document.getElementById('eventHeader').textContent =
+                data.event_name || "NO EVENT";
+
+            document.getElementById('announcementBar').textContent =
+                data.announcement || "Welcome Players";
+
+        }catch(err){
+            console.error(err);
+        }
+    }
+    // 📢 FETCH ACTIVE EVENT
+    async function fetchActiveEvent(){
+        try{
+            const res = await fetch('/api/active-event');
+            const data = await res.json();
+
+            if(data.event_name){
+                document.getElementById('eventName').textContent = data.event_name;
+            }
+
+            if(data.announcement){
+                document.getElementById('marqueeTop').textContent = data.announcement;
+                document.getElementById('marqueeBottom').textContent = data.announcement;
+            }
+
+        }catch(e){
+            console.error(e);
+        }
+    }
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
     checkSession('player');   
     fetchGame();
     checkPlayerBalance(); // ✅ initial load
+    setInterval(fetchEvent, 3000);
+    fetchEvent();
+    setInterval(fetchActiveEvent, 3000);
+    fetchActiveEvent();
 </script>
 
 </body>
