@@ -28,24 +28,23 @@ const loginLimiter = rateLimit({
 // HELPER FUNCTIONS (ADD HERE)
 // ==========================
 
-const upsertActiveEvent = async ({ gameId, event_name, announcement, status }) => {
+const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
   const check = await pool.query(`SELECT * FROM active_event WHERE id = 1`);
 
   if (check.rows.length === 0) {
     await pool.query(`
-      INSERT INTO active_event (id, game_id, event_name, announcement, status)
+      INSERT INTO active_event (id, game_id, event_name, announcement)
       VALUES (1, $1, $2, $3, $4)
-    `, [gameId, event_name, announcement, status || 'OPEN']);
+    `, [gameId, event_name, announcement]);
   } else {
     await pool.query(`
       UPDATE active_event
       SET game_id = $1,
           event_name = $2,
           announcement = $3,
-          status = $4,
           updated_at = NOW()
       WHERE id = 1
-    `, [gameId, event_name, announcement, status || 'OPEN']);
+    `, [gameId, event_name, announcement);
   }
 };
 
@@ -1238,8 +1237,7 @@ app.post('/api/start-game', isAuthenticated, async (req, res) => {
     await upsertActiveEvent({
       gameId: result.rows[0].id,
       event_name: "Pitwarriors619", // or keep existing
-      announcement: `Game Started - Fight #${fightNumber}`,
-      status: 'OPEN'
+      announcement: `Game Started - Fight #${fightNumber}`
     });
 
     res.json({
@@ -1292,7 +1290,7 @@ app.post('/api/close-game', isAuthenticated, async (req, res) => {
       gameId: game.id,
       event_name: null,
       announcement: `Betting Closed`,
-      status: 'CLOSED'
+      
     });
 
     return res.json({
@@ -1331,7 +1329,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
       gameId: result.rows[0].id,
       event_name: null,
       announcement: `Winner: ${winner}`,
-      status: 'RESOLVED'
+    
     });
     res.json({
       message: "Winner declared",
