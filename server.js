@@ -34,7 +34,7 @@ const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
   if (check.rows.length === 0) {
     await pool.query(`
       INSERT INTO active_event (id, game_id, event_name, announcement)
-      VALUES (1, $1, $2, $3, $4)
+      VALUES (1, $1, $2, $3)
     `, [gameId, event_name, announcement]);
   } else {
     await pool.query(`
@@ -1288,7 +1288,7 @@ app.post('/api/close-game', isAuthenticated, async (req, res) => {
 
     await upsertActiveEvent({
       gameId: game.id,
-      event_name: null,
+      event_name: "Pitwarriors619",
       announcement: `Betting Closed`,
       
     });
@@ -1327,7 +1327,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     }
     await upsertActiveEvent({
       gameId: result.rows[0].id,
-      event_name: null,
+      event_name: "Pitwarriors619",
       announcement: `Winner: ${winner}`,
     
     });
