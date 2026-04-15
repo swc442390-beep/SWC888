@@ -28,20 +28,45 @@ const loginLimiter = rateLimit({
 // ==========================
 const settleGame = async (gameId, winner) => {
 
-// ❌ HANDLE CANCELLED (refund all)
-      if (winner === 'CANCELLED') {
-        const bets = await pool.query(`
-          SELECT user_id, amount FROM bets WHERE game_id = $1
-        `, [gameId]);
+  // ❌ HANDLE CANCELLED (refund all + remove commissions)
+  if (winner === 'CANCELLED') {
 
-        for (const bet of bets.rows) {
-          await pool.query(`
-            UPDATE users SET points = points + $1 WHERE id = $2
-          `, [bet.amount, bet.user_id]);
-        }
+    // 1. REFUND ALL BETS
+    const bets = await pool.query(`
+      SELECT id, user_id, amount 
+      FROM bets 
+      WHERE game_id = $1
+    `, [gameId]);
 
-        return;
-      }
+    for (const bet of bets.rows) {
+      await pool.query(`
+        UPDATE users 
+        SET points = points + $1 
+        WHERE id = $2
+      `, [bet.amount, bet.user_id]);
+
+      // 📝 Log refund
+      await pool.query(`
+        INSERT INTO wallet_transactions
+        (user_id, type, amount, balance_after, description)
+        VALUES ($1, 'credit', $2,
+          (SELECT points FROM users WHERE id=$1),
+          $3)
+      `, [
+        bet.user_id,
+        bet.amount,
+        `Refund - Game Cancelled`
+      ]);
+    }
+
+    // 2. ❌ REMOVE COMMISSIONS (VERY IMPORTANT)
+    await pool.query(`
+      DELETE FROM commission_transactions
+      WHERE game_id = $1
+    `, [gameId]);
+
+    return;
+  }
 
       // 1. GET ALL BETS
       const betsRes = await pool.query(`
