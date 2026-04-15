@@ -23,39 +23,12 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,  // disable X-RateLimit-* headers
 });
 
-
 // ==========================
-// HELPER FUNCTIONS (ADD HERE)
+// 💰 SETTLE GAME FUNCTION
 // ==========================
+const settleGame = async (gameId, winner) => {
 
-const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
-  const check = await pool.query(`SELECT * FROM active_event WHERE id = 1`);
-
-  // ✅ Use existing event_name if not provided
-  if (!event_name && check.rows.length > 0) {
-    event_name = check.rows[0].event_name;
-  }
-
-  if (check.rows.length === 0) {
-    await pool.query(`
-      INSERT INTO active_event (id, game_id, event_name, announcement)
-      VALUES (1, $1, $2, $3)
-    `, [gameId, event_name, announcement]);
-  } else {
-    await pool.query(`
-      UPDATE active_event
-      SET game_id = $1,
-          event_name = $2,
-          announcement = $3,
-          updated_at = NOW()
-      WHERE id = 1
-    `, [gameId, event_name, announcement]);
-    // ==========================
-    // 💰 SETTLE GAME FUNCTION
-    // ==========================
-    const settleGame = async (gameId, winner) => {
-
-      // ❌ HANDLE CANCELLED (refund all)
+// ❌ HANDLE CANCELLED (refund all)
       if (winner === 'CANCELLED') {
         const bets = await pool.query(`
           SELECT user_id, amount FROM bets WHERE game_id = $1
@@ -134,6 +107,33 @@ const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
         ]);
       }
     };
+// ==========================
+// HELPER FUNCTIONS (ADD HERE)
+// ==========================
+
+const upsertActiveEvent = async ({ gameId, event_name, announcement }) => {
+  const check = await pool.query(`SELECT * FROM active_event WHERE id = 1`);
+
+  // ✅ Use existing event_name if not provided
+  if (!event_name && check.rows.length > 0) {
+    event_name = check.rows[0].event_name;
+  }
+
+  if (check.rows.length === 0) {
+    await pool.query(`
+      INSERT INTO active_event (id, game_id, event_name, announcement)
+      VALUES (1, $1, $2, $3)
+    `, [gameId, event_name, announcement]);
+  } else {
+    await pool.query(`
+      UPDATE active_event
+      SET game_id = $1,
+          event_name = $2,
+          announcement = $3,
+          updated_at = NOW()
+      WHERE id = 1
+    `, [gameId, event_name, announcement]);
+    
   }
 };
 
@@ -1429,16 +1429,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
-  const result = await pool.query(`
-    UPDATE games
-    SET winner=$1, status='RESOLVED'
-    WHERE status='CLOSED'
-    RETURNING *
-  `, [winner]);
-  const gameId = result.rows[0].id;
-
-  // 🔥 SETTLE GAME (PAY WINNERS)
-  await settleGame(gameId, winner);
+  
 });
 // ==========================
 //  ACTIVE EVENT API
