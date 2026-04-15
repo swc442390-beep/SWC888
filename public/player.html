@@ -379,7 +379,7 @@
 
             const balance = Number(data.userBalance ?? 0);
 
-            document.getElementById('balance').textContent = balance;
+            document.getElementById('balance').textContent = formatNumber(balance);
 
             if(balance <= 0){
                 disableBetting("No balance. Contact your agent.");
