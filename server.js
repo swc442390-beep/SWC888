@@ -1396,9 +1396,10 @@ app.post('/api/close-game', isAuthenticated, async (req, res) => {
 //  DECLARE WINNER (DECLARATOR ONLY)
 // ==========================
 app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
-  const { winner } = req.body; 
-  // MERON | WALA | DRAW | CANCELLED
+  const { winner } = req.body;
+
   stopDummyEngine();
+
   try {
     if (req.session.user.role !== 'declarator') {
       return res.status(403).json({ error: "Unauthorized" });
@@ -1410,16 +1411,22 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
       WHERE status='CLOSED'
       RETURNING *
     `, [winner]);
-    // ✅ ADD THIS HERE
+
     if (result.rows.length === 0) {
       return res.status(400).json({ error: "No closed game to resolve" });
     }
+
+    const gameId = result.rows[0].id;
+
+    // 🔥 VERY IMPORTANT (THIS WAS MISSING)
+    await settleGame(gameId, winner);
+
     await upsertActiveEvent({
-      gameId: result.rows[0].id,
+      gameId: gameId,
       event_name: "",
       announcement: `${winner} WINS!`,
-    
     });
+
     res.json({
       message: "Winner declared",
       game: result.rows[0]
@@ -1429,7 +1436,6 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
-  
 });
 // ==========================
 //  ACTIVE EVENT API
