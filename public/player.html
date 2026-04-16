@@ -511,15 +511,19 @@
             const res = await fetch('/api/active-event');
             const data = await res.json();
 
+            console.log("ACTIVE EVENT:", data); // 🔥 ADD THIS
+
             document.getElementById('eventHeader').textContent =
                 data.event_name || "NO EVENT";
 
             document.getElementById('announcementBar').textContent =
                 data.announcement || "Welcome Players";
 
-            // 🎥 LOAD STREAM HERE
-            if (data.stream_url) {
+            let currentStream = "";
+
+            if (data.stream_url && data.stream_url !== currentStream) {
                 document.getElementById('liveStream').src = data.stream_url;
+                currentStream = data.stream_url;
             }
 
         }catch(err){
