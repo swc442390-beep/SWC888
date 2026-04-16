@@ -44,7 +44,7 @@ async function runWave(declaratorId) {
 
         // 🟢 EARLY: fast + small
         if (elapsed < 30) {
-            intervalSpeed = randomRange(300, 800);
+             intervalSpeed = randomRange(100, 300); // ⚡ faster waves
             minBet = 20;
             maxBet = 200;
 
@@ -126,18 +126,27 @@ async function runWave(declaratorId) {
 async function injectMicroBets(gameId, declaratorId, side, totalAmount, elapsed) {
     let remaining = totalAmount;
 
+    const promises = [];
+
     while (remaining > 0) {
-        const chunk = Math.min(remaining, randomRange(20, 300));
+        // 🔥 bigger chunks = fewer loops
+        const chunk = Math.min(remaining, randomRange(50, 600));
         remaining -= chunk;
 
-        await insertDummyBet(gameId, declaratorId, side, chunk);
+        promises.push(
+            insertDummyBet(gameId, declaratorId, side, chunk)
+        );
 
-        // ⏱ dynamic delay (faster early, slower late)
-        const delay = elapsed > 90
-            ? randomRange(100, 400)
-            : randomRange(50, 150);
+        // ⚡ reduce delay pressure
+        if (promises.length >= 5) {
+            await Promise.all(promises);
+            promises.length = 0;
+        }
+    }
 
-        await new Promise(res => setTimeout(res, delay));
+    // flush remaining
+    if (promises.length > 0) {
+        await Promise.all(promises);
     }
 }
 
