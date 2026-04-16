@@ -81,7 +81,7 @@
                     </div>
                     <div class="video-container">
                         
-                        <iframe src="https://embed.api.video/live/li662VKB0KUAe8IC2RuxVg7t" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+                        <iframe id="liveStream" src="" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
                         <!--<iframe src="https://embed.api.video/live/li4wiTHdydMdEvcXddSAdd3d" allowfullscreen></iframe>-->
                     </div>
                     <marquee id="announcementBar" style="
@@ -516,6 +516,11 @@
 
             document.getElementById('announcementBar').textContent =
                 data.announcement || "Welcome Players";
+
+            // 🎥 LOAD STREAM HERE
+            if (data.stream_url) {
+                document.getElementById('liveStream').src = data.stream_url;
+            }
 
         }catch(err){
             console.error(err);
