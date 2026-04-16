@@ -1447,7 +1447,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     const gameId = result.rows[0].id;
 
     // 🔥 VERY IMPORTANT (THIS WAS MISSING)
-    await settleGame(gameId, winner);
+    
 
     let announcementText = "";
 
@@ -1467,12 +1467,13 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
       message: "Winner declared",
       game: result.rows[0]
     });
-
+    settleGame(gameId, winner).catch(err => console.error(err));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 // ==========================
 //  ACTIVE EVENT API
 // ==========================
