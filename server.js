@@ -1068,13 +1068,16 @@ app.get('/api/game-status', isAuthenticated, async (req, res) => {
         
         // ✅ 3. GET PLAYER BETS
         const playerRes = await pool.query(`
-            SELECT
-                COALESCE(SUM(CASE WHEN side='MERON' THEN amount END),0) AS "playerMeron",
-                COALESCE(SUM(CASE WHEN side='WALA' THEN amount END),0) AS "playerWala",
-                COALESCE(SUM(CASE WHEN side='DRAW' THEN amount END),0) AS "playerDraw"
-            FROM bets
-            WHERE game_id = $1 AND is_dummy = false
-        `, [game.id]);
+          SELECT
+              COALESCE(SUM(CASE WHEN b.side='MERON' THEN b.amount END),0) AS "playerMeron",
+              COALESCE(SUM(CASE WHEN b.side='WALA' THEN b.amount END),0) AS "playerWala",
+              COALESCE(SUM(CASE WHEN b.side='DRAW' THEN b.amount END),0) AS "playerDraw"
+          FROM bets b
+          JOIN users u ON u.id = b.user_id
+          WHERE b.game_id = $1
+            AND b.is_dummy = false
+            AND u.role = 'player'   -- 🔥 ONLY REAL PLAYERS
+      `, [game.id]);
 
         const playerBets = playerRes.rows[0];
 
