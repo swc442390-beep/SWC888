@@ -1358,7 +1358,7 @@ app.post('/api/start-game', isAuthenticated, async (req, res) => {
     });
 
     
-
+    
     startDummyEngine(req.session.user.id);
   } catch (err) {
     console.error(err);

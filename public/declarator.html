@@ -301,13 +301,7 @@ button:disabled {
             }
             
 
-            await fetch('/api/declarator/set-header',{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({
-                    message
-                })
-            });
+            
             closeStartModal();
 
         } catch (err) {
