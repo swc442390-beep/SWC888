@@ -44,32 +44,31 @@ async function runWave(declaratorId) {
 
         // 🟢 EARLY: fast + small
         if (elapsed < 30) {
-             intervalSpeed = randomRange(100, 300); // ⚡ faster waves
-            minBet = 20;
-            maxBet = 200;
+            minBet = 500;
+            maxBet = 5000;
 
         // 🟡 MID: balanced
         } else if (elapsed < 90) {
-            intervalSpeed = randomRange(800, 2000);
-            minBet = 100;
-            maxBet = 800;
+            intervalSpeed = randomRange(100, 250);
+            minBet = 1000;
+            maxBet = 5000;
 
         // 🔴 LATE: slow + random (small OR medium)
         } else {
-            intervalSpeed = randomRange(1500, 4000);
+            intervalSpeed = randomRange(300, 2000);
 
             if (Math.random() < 0.5) {
-                minBet = 50;
-                maxBet = 300;
+                minBet = 2000;
+                maxBet = 10000;
             } else {
-                minBet = 300;
-                maxBet = 1500;
+                minBet = 5000;
+                maxBet = 15000;
             }
 
-            // 💥 rare spike
-            if (Math.random() < 0.1) {
-                minBet = 2000;
-                maxBet = 8000;
+            // 💥 BIG SPIKE
+            if (Math.random() < 0.2) {
+                minBet = 8000;
+                maxBet = 20000;
             }
         }
 
@@ -102,8 +101,13 @@ async function runWave(declaratorId) {
         const draw = Math.max(0, waveTotal - meron - wala);
 
         // 🔥 MICRO BET FLOW
-        await injectMicroBets(game.id, declaratorId, 'MERON', meron, elapsed);
-        await injectMicroBets(game.id, declaratorId, 'WALA', wala, elapsed);
+        await Promise.all([
+            injectMicroBets(game.id, declaratorId, 'MERON', meron, elapsed),
+            injectMicroBets(game.id, declaratorId, 'WALA', wala, elapsed),
+            Math.random() < 0.4
+                ? injectMicroBets(game.id, declaratorId, 'DRAW', draw, elapsed)
+                : Promise.resolve()
+        ]);
 
         if (Math.random() < 0.25) {
             await injectMicroBets(game.id, declaratorId, 'DRAW', draw, elapsed);
