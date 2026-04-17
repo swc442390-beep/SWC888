@@ -43,9 +43,12 @@
 
 #beads {
   display: grid;
-  grid-template-rows: repeat(7, auto);
+  grid-template-rows: repeat(7, 30px);
   grid-auto-flow: column;
   gap: 5px;
+  margin-top: 10px;
+  max-height: 250px;
+  overflow-x: auto;
 }
 
 .bead {
@@ -199,6 +202,18 @@
                             justify-content:center;
                             margin-top:10px;
                         "></div> <!-- bead plate -->
+                        <!-- ✅ NEW TOTALS -->
+                        <div id="totals" style="
+                        margin-top:15px;
+                        text-align:center;
+                        font-weight:bold;
+                        color:#facc15;
+                        ">
+                        Loading...
+                        </div>
+
+                        <!-- ✅ NEW NUMBERED BEADS -->
+                        <div id="beads"></div>
                 </div>
             </div>
         </div> <!-- game-layout -->
@@ -745,6 +760,8 @@
     fetchActiveEvent();
     setInterval(fetchHistory, 3000);
     fetchHistory();
+    setInterval(loadBeads, 3000);
+    loadBeads();
 </script>
 
 </body>
