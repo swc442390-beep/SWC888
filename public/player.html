@@ -612,19 +612,26 @@
         history.forEach(game => {
             const winner = game.winner;
 
-            // 👉 NEW COLUMN if result changes OR column full
-            if (
-                winner !== lastWinner ||
-                currentCol.length >= MAX_ROWS
-            ){
-                if(currentCol.length){
-                    columns.push(currentCol);
+            // 🎯 Ignore DRAW & CANCELLED for column switching
+            const isNeutral = (winner === 'DRAW' || winner === 'CANCELLED');
+
+            // 👉 Only MERON/WALA affect column logic
+            if (!isNeutral) {
+                if (
+                    winner !== lastWinner ||
+                    currentCol.length >= MAX_ROWS
+                ){
+                    if(currentCol.length){
+                        columns.push(currentCol);
+                    }
+                    currentCol = [];
                 }
-                currentCol = [];
+
+                lastWinner = winner;
             }
 
+            // 👉 Always push (so DRAW/CANCELLED still show)
             currentCol.push(winner);
-            lastWinner = winner;
         });
 
         if(currentCol.length){
@@ -634,16 +641,21 @@
         // 🔥 RENDER GRID (column-based)
         container.style.display = 'grid';
         container.style.gridAutoFlow = 'column';
-        container.style.gridTemplateRows = `repeat(${MAX_ROWS}, 12px)`;
+        container.style.gridTemplateRows = `repeat(${MAX_ROWS}, 14px)`;
+        container.style.background = '#0f172a';
+        container.style.padding = '6px';
+        container.style.borderRadius = '6px';
         container.style.gap = '4px';
 
         columns.forEach(col => {
             for(let i=0; i<MAX_ROWS; i++){
                 const dot = document.createElement('div');
 
-                dot.style.width = '12px';
-                dot.style.height = '12px';
+                dot.style.width = '14px';
+                dot.style.height = '14px';
                 dot.style.borderRadius = '50%';
+                dot.style.border = '2px solid transparent';
+                dot.style.background = 'transparent';
 
                 const result = col[i];
 
@@ -651,10 +663,18 @@
                     dot.style.visibility = 'hidden';
                 } else {
                     switch(result){
-                        case 'MERON': dot.style.background = 'red'; break;
-                        case 'WALA': dot.style.background = 'blue'; break;
-                        case 'DRAW': dot.style.background = 'green'; break;
-                        case 'CANCELLED': dot.style.background = 'gray'; break;
+                        case 'MERON':
+                            dot.style.borderColor = 'red';
+                            break;
+                        case 'WALA':
+                            dot.style.borderColor = 'blue';
+                            break;
+                        case 'DRAW':
+                            dot.style.borderColor = 'green';
+                            break;
+                        case 'CANCELLED':
+                            dot.style.borderColor = 'gray';
+                            break;
                     }
                 }
 
