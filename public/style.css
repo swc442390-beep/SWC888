@@ -635,3 +635,16 @@ button:active {
 .copy-btn:hover {
     background-color: #444;
 }
+
+.membership-text {
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+@media (max-width: 768px) {
+    .membership-text {
+        font-size: 13px;
+        padding: 0 10px; /* prevents text from touching edges */
+    }
+}
