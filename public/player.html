@@ -10,7 +10,7 @@
 .video-container { width:100%; aspect-ratio:16/9; margin-bottom:15px; }
 .video-container iframe { width:100%; height:100%; border:none; }
 
-.betting-card { background:#1e293b; border-radius:12px; padding:15px; }
+.betting-card { background:#1e293b; border-radius:12px; padding:15px; overflow: visible; }
 
 .row { display:flex; justify-content:space-between; margin-bottom:8px; }
 .header-row { font-weight:bold; color:#14b8a6; }
@@ -43,12 +43,12 @@
 
 #beads {
   display: grid;
-  grid-template-rows: repeat(7, 30px);
-  grid-auto-flow: column;
+  grid-template-columns: repeat(auto-fill, 30px);
   gap: 5px;
   margin-top: 10px;
   max-height: 250px;
-  overflow-x: auto;
+  overflow-y: auto;   /* 🔥 change this */
+  overflow-x: hidden; /* 🔥 prevent sideways mess */
 }
 
 .bead {
@@ -719,7 +719,36 @@
             }
         });
     }
-    
+    async function loadBeads() {
+        const res = await fetch('/api/beads-history');
+        const data = await res.json();
+
+        const history = data.history;
+        const counts = data.counts;
+
+        // ✅ SHOW TOTALS
+        document.getElementById('totals').innerHTML = `
+            MERON: ${counts.MERON} |
+            WALA: ${counts.WALA} |
+            DRAW: ${counts.DRAW} |
+            CANCELLED: ${counts.CANCELLED}
+        `;
+
+        const container = document.getElementById('beads');
+        container.innerHTML = '';
+
+        let number = 1;
+
+        history.forEach((result, index) => {
+            const bead = document.createElement('div');
+
+            bead.className = 'bead ' + result.toLowerCase();
+
+            bead.innerText = number++; // ✅ NUMBER INSIDE
+
+            container.appendChild(bead);
+        });
+        }
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
     checkSession('player');   
@@ -732,8 +761,9 @@
     
     setInterval(() => {
         fetchHistory();
-        
+        loadBeads();
     }, 3000);
+    
 </script>
 
 </body>
