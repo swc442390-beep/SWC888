@@ -810,8 +810,9 @@ app.post('/api/reset-password', isAuthenticated, async (req, res) => {
 app.get('/api/agents', isAuthenticated, async (req, res) => {
   try {
     const currentUserId = req.session.user.id;
+    const currentUserRole = req.session.user.role;
 
-    const result = await pool.query(`
+    let query = `
       SELECT 
         u.id,
         u.username,
@@ -826,7 +827,19 @@ app.get('/api/agents', isAuthenticated, async (req, res) => {
       LEFT JOIN users p ON u.parent_id = p.id
       WHERE u.role IN ('master_agent', 'sub_agent', 'agent')
       AND u.status NOT IN ('pending', 'rejected')
-    `);
+    `;
+
+    let params = [];
+
+    // ✅ ONLY restrict if NOT admin
+    if (currentUserRole !== 'admin') {
+      query += ` AND u.parent_id = $1`;
+      params.push(currentUserId);
+    }
+
+    query += ` ORDER BY u.created_at DESC`;
+
+    const result = await pool.query(query, params);
 
     res.json(result.rows);
 
