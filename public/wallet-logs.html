@@ -121,6 +121,15 @@
         }
 
         // Close sidebar if click outside (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
+                    closeSidebar();
+                }
+            }
+        });
         async function loadWalletLogs() {
             try {
                 const res = await fetch('/api/my-wallet-transactions', {
