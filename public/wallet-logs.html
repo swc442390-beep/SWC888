@@ -95,11 +95,31 @@
             loadWithdrawCount();
         }
 
+       
+        // =========================
+        // Hamburger & overlay
+        // =========================
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            const overlay = document.getElementById('overlay');
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active'); // show overlay
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
         }
 
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Close sidebar if click outside (mobile)
         async function loadWalletLogs() {
             try {
                 const res = await fetch('/api/my-wallet-transactions', {
