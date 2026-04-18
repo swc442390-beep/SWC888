@@ -616,3 +616,22 @@ button:active {
     display: inline-block;
     width: auto;
 }
+
+.copy-btn {
+    display: block;
+    margin: 15px auto; /* centers horizontally */
+    width: 140px; /* slightly wider for better look */
+    padding: 8px 10px;
+    font-size: 13px;
+    text-align: center;
+    border: none;
+    border-radius: 6px;
+    background-color: #2b2b2b;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.copy-btn:hover {
+    background-color: #444;
+}
