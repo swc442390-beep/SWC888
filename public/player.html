@@ -10,7 +10,7 @@
 .video-container { width:100%; aspect-ratio:16/9; margin-bottom:15px; }
 .video-container iframe { width:100%; height:100%; border:none; }
 
-.betting-card { background:#1e293b; border-radius:12px; padding:15px; overflow: visible; }
+.betting-card { background:#1e293b; border-radius:12px; padding:15px; }
 
 .row { display:flex; justify-content:space-between; margin-bottom:8px; }
 .header-row { font-weight:bold; color:#14b8a6; }
@@ -43,12 +43,12 @@
 
 #beads {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 30px);
+  grid-template-rows: repeat(7, 30px);
+  grid-auto-flow: column;
   gap: 5px;
   margin-top: 10px;
   max-height: 250px;
-  overflow-y: auto;   /* 🔥 change this */
-  overflow-x: hidden; /* 🔥 prevent sideways mess */
+  overflow-x: auto;
 }
 
 .bead {
@@ -60,23 +60,7 @@
   line-height: 30px;
   font-size: 12px;
 }
-#beadPlate {
-    display: grid;
-    grid-auto-flow: column; /* grows sideways */
-    grid-template-rows: repeat(6, 14px); /* max 6 rows */
 
-    gap: 4px;
-    justify-content: start;
-
-    overflow-x: auto;   /* ✅ scroll on mobile */
-    overflow-y: hidden;
-
-    padding: 6px;
-    background: #0f172a;
-    border-radius: 6px;
-
-    max-width: 100%;
-}
 .meron { background: red; }
 .wala { background: blue; }
 .draw { background: green; }
@@ -211,8 +195,13 @@
                                 Win: <span id="winDraw">0</span>
                             </div>
                         </div>
-                        <div id="beadPlate"></div>
-                        <!-- bead plate -->
+                        <div id="beadPlate" style="
+                            display:grid;
+                            grid-template-columns: repeat(30, 12px);
+                            gap:4px;
+                            justify-content:center;
+                            margin-top:10px;
+                        "></div> <!-- bead plate -->
                         <!-- ✅ NEW TOTALS -->
                         <div id="totals" style="
                         margin-top:15px;
@@ -699,8 +688,8 @@
             for(let i=0; i<MAX_ROWS; i++){
                 const dot = document.createElement('div');
 
-                dot.style.width = '12px';
-                dot.style.height = '12px';
+                dot.style.width = '14px';
+                dot.style.height = '14px';
                 dot.style.borderRadius = '50%';
                 dot.style.border = '2px solid transparent';
                 dot.style.background = 'transparent';
@@ -769,12 +758,10 @@
     fetchEvent();
     setInterval(fetchActiveEvent, 3000);
     fetchActiveEvent();
-    
-    setInterval(() => {
-        fetchHistory();
-        loadBeads();
-    }, 3000);
-    
+    setInterval(fetchHistory, 3000);
+    fetchHistory();
+    setInterval(loadBeads, 3000);
+    loadBeads();
 </script>
 
 </body>
