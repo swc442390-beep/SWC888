@@ -1620,7 +1620,7 @@ app.post('/api/declarator/set-video', isAuthenticated, async (req, res) => {
 // GAME HISTORY API
 // ==========================
 
-app.get('/api/game-history?eventId=ACTIVE_ID', async (req, res) => {
+app.get('/api/game-history', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT g.winner
