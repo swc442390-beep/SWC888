@@ -758,10 +758,11 @@
     fetchEvent();
     setInterval(fetchActiveEvent, 3000);
     fetchActiveEvent();
-    setInterval(fetchHistory, 3000);
-    fetchHistory();
-    setInterval(loadBeads, 3000);
-    loadBeads();
+    
+    setInterval(() => {
+        fetchHistory();
+        loadBeads();
+    }, 3000);
 </script>
 
 </body>
