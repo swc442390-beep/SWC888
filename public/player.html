@@ -213,13 +213,7 @@
                                 Win: <span id="winDraw">0</span>
                             </div>
                         </div>
-                        <div id="beadPlate" style="
-                            display:grid;
-                            grid-template-columns: repeat(30, 12px);
-                            gap:4px;
-                            justify-content:center;
-                            margin-top:10px;
-                        "></div> <!-- bead plate -->
+                        <div id="beadPlate"></div> <!-- bead plate -->
                         <!-- ✅ NEW TOTALS -->
                         <div id="totals" style="
                         margin-top:15px;
@@ -694,20 +688,21 @@
         }
 
         // 🔥 RENDER GRID (column-based)
-        container.style.display = 'grid';
+        /*container.style.display = 'grid';
         container.style.gridAutoFlow = 'column';
         container.style.gridTemplateRows = `repeat(${MAX_ROWS}, 14px)`;
         container.style.background = '#0f172a';
         container.style.padding = '6px';
         container.style.borderRadius = '6px';
-        container.style.gap = '4px';
+        container.style.gap = '4px';*/
 
         columns.forEach(col => {
             for(let i=0; i<MAX_ROWS; i++){
                 const dot = document.createElement('div');
 
-                dot.style.width = '12px';
-                dot.style.height = '12px';
+                const size = window.innerWidth <= 768 ? 10 : 12;
+                dot.style.width = size + 'px';
+                dot.style.height = size + 'px';
                 dot.style.borderRadius = '50%';
                 dot.style.border = '2px solid transparent';
                 dot.style.background = 'transparent';
@@ -734,6 +729,8 @@
                 }
 
                 container.appendChild(dot);
+                const plate = document.getElementById('beadPlate');
+                plate.scrollLeft = plate.scrollWidth;
             }
         });
     }
