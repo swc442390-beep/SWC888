@@ -53,7 +53,7 @@
             <div class="table-wrapper">
                 <table class="styled-table" id="walletTable">
                     <thead>
-                        <tr>
+                         <tr>
                             <th>Date</th>
                             <th>Source User</th>
                             <th>Base Amount</th>
@@ -186,12 +186,15 @@
                     const row = document.createElement('tr');
 
                     row.innerHTML = `
-                        <td>${new Date(tx.created_at).toLocaleString()}</td>
-                        <td>${tx.source_username || 'SYSTEM'}</td>
-                        <td>${tx.amount}</td>
-                        <td>${tx.rate}%</td>
-                        <td>Level ${tx.level}</td>
-                        <td>Fight #${tx.game_fight || '-'}</td>
+                        row.innerHTML = `
+                            <td>${new Date(tx.created_at).toLocaleString()}</td>
+                            <td>${tx.source_username || '-'}</td>
+                            <td>${Number(tx.base_amount || 0).toFixed(2)}</td>
+                            <td>${Number(tx.rate || 0).toFixed(2)}%</td>
+                            <td>${Number(tx.amount || 0).toFixed(2)}</td>
+                            <td>Level ${tx.level ?? '-'}</td>
+                            <td>Fight #${tx.game_fight ?? '-'}</td>
+                        `;
                     `;
 
                     tbody.appendChild(row);
