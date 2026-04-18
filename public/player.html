@@ -719,36 +719,7 @@
             }
         });
     }
-    async function loadBeads() {
-        const res = await fetch('/api/beads-history');
-        const data = await res.json();
-
-        const history = data.history;
-        const counts = data.counts;
-
-        // ✅ SHOW TOTALS
-        document.getElementById('totals').innerHTML = `
-            MERON: ${counts.MERON} |
-            WALA: ${counts.WALA} |
-            DRAW: ${counts.DRAW} |
-            CANCELLED: ${counts.CANCELLED}
-        `;
-
-        const container = document.getElementById('beads');
-        container.innerHTML = '';
-
-        let number = 1;
-
-        history.forEach((result, index) => {
-            const bead = document.createElement('div');
-
-            bead.className = 'bead ' + result.toLowerCase();
-
-            bead.innerText = number++; // ✅ NUMBER INSIDE
-
-            container.appendChild(bead);
-        });
-        }
+    
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
     checkSession('player');   
@@ -761,7 +732,7 @@
     
     setInterval(() => {
         fetchHistory();
-        loadBeads();
+        
     }, 3000);
 </script>
 
