@@ -14,7 +14,7 @@
         <h2>Welcome, <span class="username">Agent</span></h2>
 
         <a href="admin.html">🏠 Dashboard</a>
-        <a href="summary.html" id="summaryLink">📊 Summary Report</a>
+        <a href="summary.html">📊 Summary Report</a>
         <a href="wallet-logs.html">📄 Wallet Logs</a>
         <a href="commission-logs.html">💰 Commission Logs</a>
         <a href="withdrawal.html">💸 Commission Withdrawals 
@@ -92,6 +92,12 @@
     </div>
 
     <script>
+        function formatNumber(amount) {
+            return new Intl.NumberFormat('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
         async function checkSession() {
             try {
                 const res = await fetch('/api/dashboard', {
@@ -223,7 +229,7 @@
                     console.log("Player parent:", p.parent_id, "Current user:", currentUserId);
                     row.innerHTML = `
                         <td>${p.username}</td>
-                        <td>${p.points}</td>
+                        <td>${formatNumber(p.points)}</td><td>${p.points}</td>
                         <td>${p.parent_username || '-'}</td>
                         <td class="status ${p.status}">${p.status}</td>
                         <td class="actions">
