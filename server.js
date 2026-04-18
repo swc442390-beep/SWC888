@@ -1839,6 +1839,34 @@ app.get('/api/commission-summary', isAuthenticated, async (req, res) => {
   }
 });
 // ==========================
+// SUPER ADMIN CHECK MIDDLEWARE
+// ==========================
+function requireSuperadmin(req, res, next) {
+    if (!req.user || req.user.role !== '-1') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+}
+// ==========================
+// SUPER ADMIN CHECK MIDDLEWARE
+// ==========================
+app.get('/api/superadmin-summary', requireSuperAdmin, async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT
+                (SELECT COALESCE(SUM(balance),0) FROM users) AS total_wallet,
+                (SELECT COALESCE(SUM(amount),0) FROM commission_transactions) AS commission,
+                (SELECT COALESCE(SUM(amount),0) FROM withdrawals WHERE status='approved') AS withdrawals
+        `);
+
+        res.json(result.rows[0]);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+// ==========================
 // START SERVER
 // ==========================
 const PORT = process.env.PORT || 3000;

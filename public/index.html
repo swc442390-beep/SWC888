@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Pitwarriors619</title>
+    <title>Sign In - SWC888</title>
     <link rel="stylesheet" href="style.css">
     
 </head>
@@ -11,10 +11,10 @@
     <div id="snackbar"></div>
     <div class="login-container">
         <!-- Logo -->
-        <img src="logo.png" alt="Pitwarriors619 Logo" class="logo">
+        <img src="logo.png" alt="SWC888 Logo" class="logo">
 
         <!-- Site Title -->
-        <h1>Pitwarriors619</h1>
+        <h1>SWC888</h1>
 
         <!-- Username Field -->
         <div class="input-group">
@@ -99,6 +99,11 @@
                     case "declarator":
                         showSnackbar("Login successful!", "success");
                         window.location.href = "declarator.html";
+                        break;
+                        // ✅ NEW SUPERADMIN ROLE
+                    case "-1":
+                        showSnackbar("Login successful!", "success");
+                        window.location.href = "superadmin.html";
                         break;
                     default:
                         showSnackbar("Unknown role");

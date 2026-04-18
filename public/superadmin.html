@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Pitwarriors619</title>
+    <title>Dashboard - SWC888</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -53,7 +53,16 @@
              
 
             <!-- Membership Link Card -->
-                
+                <div class="card membership-card">
+                    <div class="card-content">
+                        <h3>PLEASE TAKE NOT OF YOUR REFFERAL LINK BELOW, ALL PLAYERS THAT WILL REGISTER UNDER THIS LINK WILL AUTOMATICALLY BE UNDER YOUR ACCOUNT.</h3>
+                        <div class="link-wrapper">
+                            <input class="membership-link" type="text" value="" readonly>
+                        </div>
+                        <button onclick="copyLink()">COPY YOUR LINK</button>
+                    </div>
+                    
+                </div>
 
                 <!-- Dashboard Cards -->
                 <div class="cards-container">
@@ -124,7 +133,7 @@
 
         <!-- FOOTER -->
         <footer>
-            © 2024 Pitwarriors619. All rights reserved.
+            © 2024 SWC888. All rights reserved.
         </footer>
 
     </div>
@@ -152,16 +161,16 @@
                 }
 
                 const data = await res.json();
-                if (data.role !== 'admin') {
-                    const summaryLink = document.getElementById('summaryLink');
-                    if (summaryLink) summaryLink.style.display = 'none';
+
+                // ❗ ONLY SUPERADMIN ALLOWED
+                if (data.role !== '-1') {
+                    window.location.href = '/'; // or admin.html
+                    return;
                 }
+
                 document.querySelectorAll('.username')
                     .forEach(el => el.textContent = data.username);
-                const membershipInput = document.querySelector('.membership-link');
-                if (membershipInput) {
-                    membershipInput.value = `https://letsplay-famw.onrender.com/sign-up.html?ref=${data.id}`;
-                }
+
             } catch (err) {
                 console.error(err);
                 window.location.href = '/';
@@ -317,6 +326,29 @@
                 console.error(err);
             }
         }
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (
+                e.key === "F12" ||
+                (e.ctrlKey && e.shiftKey && e.key === "I") ||
+                (e.ctrlKey && e.shiftKey && e.key === "J") ||
+                (e.ctrlKey && e.key === "U")
+            ) {
+                e.preventDefault();
+            }
+        });
+        setInterval(() => {
+            const threshold = 160;
+            if (
+                window.outerWidth - window.innerWidth > threshold ||
+                window.outerHeight - window.innerHeight > threshold
+            ) {
+                // optional: logout or redirect
+                window.location.href = "/api/logout";
+            }
+        }, 1000);
         // Call after session check
         checkSession();
         loadDashboardWallets();
