@@ -1852,3 +1852,100 @@ app.get('/api/active-bets', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// ==========================
+// DIRECT WITHDRAW API (FOR AGENTS TO WITHDRAW TO THEIR OWN BALANCE)
+// ==========================
+app.post('/api/withdraw-points-player', isAuthenticated, async (req, res) => {
+  const { userId, amount } = req.body;
+  const currentUserId = req.session.user.id;
+
+  try {
+    const withdrawAmount = Number(amount);
+
+    if (!withdrawAmount || withdrawAmount <= 0) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    await pool.query('BEGIN');
+
+    // 🔒 Lock player
+    const playerRes = await pool.query(
+      'SELECT points, parent_id, username FROM users WHERE id=$1 FOR UPDATE',
+      [userId]
+    );
+
+    if (playerRes.rows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ error: "Player not found" });
+    }
+
+    const player = playerRes.rows[0];
+
+    // 🔐 Only direct parent can withdraw
+    if (Number(player.parent_id) !== Number(currentUserId)) {
+      await pool.query('ROLLBACK');
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    if (withdrawAmount > Number(player.points)) {
+      await pool.query('ROLLBACK');
+      return res.status(400).json({ error: "Insufficient balance" });
+    }
+
+    // 🔒 Lock agent (receiver)
+    const agentRes = await pool.query(
+      'SELECT points, username FROM users WHERE id=$1 FOR UPDATE',
+      [currentUserId]
+    );
+
+    const agent = agentRes.rows[0];
+
+    const newPlayerBalance = Number(player.points) - withdrawAmount;
+    const newAgentBalance = Number(agent.points) + withdrawAmount;
+
+    // ➖ Deduct from player
+    await pool.query(
+      'UPDATE users SET points=$1 WHERE id=$2',
+      [newPlayerBalance, userId]
+    );
+
+    // ➕ Add to agent
+    await pool.query(
+      'UPDATE users SET points=$1 WHERE id=$2',
+      [newAgentBalance, currentUserId]
+    );
+
+    // 📝 Player log
+    await pool.query(`
+      INSERT INTO wallet_transactions
+      (user_id, type, amount, balance_after, description)
+      VALUES ($1, 'debit', $2, $3, $4)
+    `, [
+      userId,
+      withdrawAmount,
+      newPlayerBalance,
+      `Withdrawn by agent ${agent.username}`
+    ]);
+
+    // 📝 Agent log
+    await pool.query(`
+      INSERT INTO wallet_transactions
+      (user_id, type, amount, balance_after, description)
+      VALUES ($1, 'credit', $2, $3, $4)
+    `, [
+      currentUserId,
+      withdrawAmount,
+      newAgentBalance,
+      `Received from player ${player.username}`
+    ]);
+
+    await pool.query('COMMIT');
+
+    res.json({ message: "Withdrawal successful" });
+
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: "Transaction failed" });
+  }
+});
