@@ -94,8 +94,8 @@ const settleGame = async (gameId, winner) => {
         Number(totals.wala) +
         Number(totals.draw);
 
-      const CUT = 0.915;
-
+      //const CUT = 0.915; // 8.5% cut for the house
+      const CUT = 0.945; // 5.5% cut for the house (🔥 NEW - MORE WINNINGS FOR PLAYERS)
       const payouts = {
         MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,
         WALA: totals.wala ? (totalPool / totals.wala) * CUT : 0,
