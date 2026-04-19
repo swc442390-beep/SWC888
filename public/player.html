@@ -430,6 +430,7 @@
             status.textContent = gameStatus;
             status.className = "status " + gameStatus;
             game.status = gameStatus;
+            updateControls(gameStatus, game.stream_enabled);
             if (data.status !== lastStatus) {
 
                 if (gameStatus !== 'OPEN') {
@@ -785,7 +786,55 @@
 
             container.appendChild(bead);
         });
+    }
+    function updateControls(gameStatus, streamEnabled){
+        const startBtn = document.getElementById('btnStart');
+        const closeBtn = document.getElementById('btnClose');
+
+        const meronBtn = document.getElementById('btnMeronWin');
+        const walaBtn = document.getElementById('btnWalaWin');
+        const drawBtn = document.getElementById('btnDrawWin');
+        const cancelBtn = document.getElementById('btnCancel');
+
+        const streamOnBtn = document.getElementById('btnStreamOn');
+        const streamOffBtn = document.getElementById('btnStreamOff');
+
+        const betButtons = document.querySelectorAll('.bet-btn, .chips button');
+
+        // 🔴 START GAME
+        toggleBtn(startBtn, gameStatus === 'RESOLVED');
+
+        // 🔵 CLOSE GAME
+        toggleBtn(closeBtn, gameStatus === 'OPEN');
+
+        // 🏁 RESULTS
+        const canDeclare = gameStatus === 'CLOSED';
+        toggleBtn(meronBtn, canDeclare);
+        toggleBtn(walaBtn, canDeclare);
+        toggleBtn(drawBtn, canDeclare);
+        toggleBtn(cancelBtn, canDeclare);
+
+        // 🎲 BETTING
+        betButtons.forEach(btn => {
+            toggleBtn(btn, gameStatus === 'OPEN');
+        });
+
+        // 📺 STREAM
+        toggleBtn(streamOnBtn, !streamEnabled);
+        toggleBtn(streamOffBtn, streamEnabled);
+    }
+
+    function toggleBtn(btn, enabled){
+        if(!btn) return;
+
+        if(enabled){
+            btn.classList.remove('btn-disabled');
+            btn.disabled = false;
+        } else {
+            btn.classList.add('btn-disabled');
+            btn.disabled = true;
         }
+    }
     setInterval(fetchGame, 3000);
     setInterval(checkPlayerBalance, 3000); // ✅ auto refresh balance
     checkSession('player');   

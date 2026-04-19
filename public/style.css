@@ -708,3 +708,45 @@ button:active {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================
+   GAME CONTROL BUTTONS
+========================== */
+
+.btn-control {
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-red { background: #dc2626; }
+.btn-blue { background: #2563eb; }
+.btn-green { background: #16a34a; }
+.btn-gray { background: #9ca3af; }
+
+.btn-disabled {
+    background: #6b7280 !important;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* GLOBAL DISABLED BUTTON STYLE */
+.btn-disabled,
+button:disabled {
+    background: #6b7280 !important; /* gray */
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ACTION COLORS */
+.btn-start { background: #dc2626; }   /* red */
+.btn-close { background: #2563eb; }   /* blue */
+
+.btn-meron { background: #dc2626; }   /* red */
+.btn-wala { background: #2563eb; }    /* blue */
+.btn-draw { background: #16a34a; }    /* green */
+.btn-cancel { background: #9ca3af; }  /* light gray */
+
+.btn-stream { background: #16a34a; }  /* green */
