@@ -1832,6 +1832,8 @@ app.get('/api/active-bets', isAuthenticated, async (req, res) => {
       FROM bets b
       JOIN users u ON u.id = b.user_id
       WHERE b.game_id = $1
+        AND b.is_dummy = false          -- ❌ REMOVE dummy bets
+        AND u.role = 'player'           -- ❌ REMOVE declarator/admin/agents
       ORDER BY b.created_at ASC
     `, [gameId]);
 
