@@ -1498,7 +1498,7 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
 app.get('/api/active-event', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT event_name, announcement, video_url
+      SELECT event_name, announcement, video_url, stream_enabled
       FROM active_event
       WHERE id = 1
     `);

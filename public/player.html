@@ -122,10 +122,30 @@
                     ">
                         LOADING EVENT...
                     </div>
-                    <div class="video-container">
-                        
-                        <iframe id="videoFrame" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
-                        <!--<iframe src="https://embed.api.video/live/li4wiTHdydMdEvcXddSAdd3d" allowfullscreen></iframe>-->
+                    <div class="video-container" style="position:relative;">
+                        <iframe id="videoFrame"></iframe>
+                        <!-- ✅ MAINTENANCE OVERLAY -->
+                        <div id="streamOffMessage" style="
+                            display:none;
+                            position:absolute;
+                            top:0;
+                            left:0;
+                            width:100%;
+                            height:100%;
+                            background:#020617;
+                            color:#facc15;
+                            font-size:20px;
+                            font-weight:bold;
+                            display:flex;
+                            justify-content:center;
+                            align-items:center;
+                            text-align:center;
+                            padding:20px;
+                        ">
+                            🔧 STREAM IS TEMPORARILY OFF<br>
+                            Please wait for the next fight
+                        </div>
+
                     </div>
                     <marquee id="announcementBar" style="
                         margin-top:5px;
@@ -586,8 +606,10 @@
             }
             if (data.stream_enabled === false) {
                 document.getElementById('videoFrame').style.display = "none";
+                document.getElementById('streamOffMessage').style.display = "flex";
             } else {
                 document.getElementById('videoFrame').style.display = "block";
+                document.getElementById('streamOffMessage').style.display = "none";
             }
         }catch(err){
             console.error(err);
