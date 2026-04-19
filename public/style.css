@@ -257,7 +257,7 @@ button:hover {
 ========================== */
 .cards-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* desktop: 2 rows */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
 }
 
@@ -590,8 +590,15 @@ button:active {
 }
 
 .game-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
     gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 .video-section {
@@ -653,5 +660,51 @@ button:active {
     #beadPlate {
         grid-template-rows: repeat(6, 12px);
         gap: 3px;
+    }
+}
+
+@media (max-width: 500px) {
+    .card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .card-icon {
+        margin-left: 0;
+    }
+}
+
+.bets-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.bet-column {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.bet-column h3 {
+    margin-bottom: 10px;
+}
+
+.bet-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-bottom: 1px solid #334155;
+    font-size: 14px;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .bets-container {
+        grid-template-columns: 1fr;
     }
 }

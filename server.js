@@ -1807,3 +1807,46 @@ app.get('/api/my-commission-transactions', isAuthenticated, async (req, res) => 
 // ==========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// ==========================
+// ACTIVE GAME BETS (WITH USERNAMES)
+// ==========================
+app.get('/api/active-bets', isAuthenticated, async (req, res) => {
+  try {
+    // 🔍 Get latest game
+    const gameRes = await pool.query(`
+      SELECT id FROM games
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
+
+    if (gameRes.rows.length === 0) {
+      return res.json({ meron: [], wala: [] });
+    }
+
+    const gameId = gameRes.rows[0].id;
+
+    // 🔍 Get bets with usernames
+    const betsRes = await pool.query(`
+      SELECT b.side, b.amount, u.username
+      FROM bets b
+      JOIN users u ON u.id = b.user_id
+      WHERE b.game_id = $1
+      ORDER BY b.created_at ASC
+    `, [gameId]);
+
+    const meron = [];
+    const wala = [];
+
+    for (const bet of betsRes.rows) {
+      if (bet.side === 'MERON') meron.push(bet);
+      if (bet.side === 'WALA') wala.push(bet);
+    }
+
+    res.json({ meron, wala });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});

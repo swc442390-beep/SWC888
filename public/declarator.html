@@ -207,8 +207,17 @@ button:disabled {
             <button class="bet-btn" onclick="toggleStream(false)">Stream OFF</button>
         </div>
     </div>
+    <div class="bets-container">
+    <div class="bet-column">
+        <h3>MERON</h3>
+        <div id="meronList"></div>
+    </div>
 
-</div>
+    <div class="bet-column">
+        <h3>WALA</h3>
+        <div id="walaList"></div>
+    </div>
+    </div>
 </div>
 
 </div>
@@ -619,12 +628,67 @@ button:disabled {
             showSnackbar("Server error", "error");
         }
     }
+    async function loadBets() {
+        try {
+            const res = await fetch('/api/active-bets', {
+            credentials: 'include'
+            });
 
+            const data = await res.json();
+
+            const meronDiv = document.getElementById('meronList');
+            const walaDiv = document.getElementById('walaList');
+
+            meronDiv.innerHTML = '';
+            walaDiv.innerHTML = '';
+
+            data.meron.forEach(bet => {
+            meronDiv.innerHTML += `
+                <div class="bet-item">
+                <span>${bet.username}</span>
+                <span>${bet.amount}</span>
+                </div>
+            `;
+            });
+
+            data.wala.forEach(bet => {
+            walaDiv.innerHTML += `
+                <div class="bet-item">
+                <span>${bet.username}</span>
+                <span>${bet.amount}</span>
+                </div>
+            `;
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+        }
+
+        
+        
     checkSession('declarator');
-    setInterval(fetchGame, 3000);
-    fetchGame();
-    setInterval(fetchEvent, 3000);
-    fetchEvent();
+
+    async function loadCore() {
+        await Promise.all([
+            fetchGame(),
+            fetchEvent()
+        ]);
+    }
+
+    async function loadFast() {
+        await loadBets();
+    }
+
+    // initial
+    loadCore();
+    loadFast();
+
+    // slower updates
+    setInterval(loadCore, 5000);
+
+    // faster updates for bets
+    setInterval(loadFast, 2000);
    
 
 </script>
