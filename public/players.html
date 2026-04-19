@@ -306,9 +306,6 @@
                 const data = await res.json();
                 showSnackbar(data.message);
             });
-
-            const data = await res.json(); // ❌ res is undefined here
-            showSnackbar(data.message);
         }
         // =========================
         // Loading points modal
@@ -474,29 +471,27 @@
                 return;
             }
 
-            closeWithdrawModal(); // ✅ fix overlap
-
-            openConfirmModal(`Withdraw ${amount} points from player?`, async () => {
-                const res = await fetch('/api/withdraw-points-player', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        userId: withdrawUserId,
-                        amount: Number(amount)
-                    })
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    showSnackbar(data.error);
-                    return;
-                }
-
-                showSnackbar(data.message, true);
-                loadPlayers();
+            const res = await fetch('/api/withdraw-points-player', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: withdrawUserId,
+                    amount: Number(amount)
+                })
             });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showSnackbar(data.error);
+                return;
+            }
+
+            showSnackbar(data.message, true);
+
+            closeWithdrawModal();   // ✅ close ONLY after success
+            loadPlayers();
         }
         // Call after session check
         checkSession();
