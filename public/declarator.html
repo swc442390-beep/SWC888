@@ -140,15 +140,15 @@ button:disabled {
     </div>
     <!-- CONTROL BUTTONS -->
     <div class="bet-buttons">
-        <button class="bet-btn" style="background:#ef4444;" onclick="openStartModal()">START GAME</button>
-        <button class="bet-btn" style="background:#4504f7;" onclick="closeGame()">CLOSE GAME</button>
+        <button id="btnStart" class="bet-btn" style="background:#ef4444;" onclick="openStartModal()">START GAME</button>
+        <button id="btnClose" class="bet-btn" style="background:#2563eb;" onclick="closeGame()">CLOSE GAME</button>
     </div>
     <div>CHOOSE WINNER:</div>
     <div class="bet-buttons">
-        <button class="bet-btn declare-btn" onclick="declareWinner('MERON')" disabled>MERON</button>
-        <button class="bet-btn declare-btn" onclick="declareWinner('WALA')" disabled>WALA</button>
-        <button class="bet-btn declare-btn" onclick="declareWinner('DRAW')" disabled>DRAW</button>
-        <button class="bet-btn declare-btn" onclick="declareWinner('CANCELLED')" disabled>CANCEL</button>
+        <button id="btnMeronWin" class="bet-btn declare-btn" onclick="declareWinner('MERON')">MERON</button>
+        <button id="btnWalaWin" class="bet-btn declare-btn" onclick="declareWinner('WALA')">WALA</button>
+        <button id="btnDrawWin" class="bet-btn declare-btn" onclick="declareWinner('DRAW')">DRAW</button>
+        <button id="btnCancelWin" class="bet-btn declare-btn" onclick="declareWinner('CANCELLED')">CANCEL</button>
     </div>
     <!-- TOTALS -->
     <div class="row"><div>TOTAL RUNNING BET:</div></div>
@@ -203,8 +203,8 @@ button:disabled {
         <button onclick="setHeader()">Update Header</button>
         <button onclick="setGameDetails()">Reset Game Details</button>
         <div class="bet-buttons">
-            <button class="bet-btn" onclick="toggleStream(true)">Stream ON</button>
-            <button class="bet-btn" onclick="toggleStream(false)">Stream OFF</button>
+            <button id="btnStreamOn" class="bet-btn" onclick="toggleStream(true)">Stream ON</button>
+            <button id="btnStreamOff" class="bet-btn" onclick="toggleStream(false)">Stream OFF</button>
         </div>
     </div>
     <div class="bets-container">
@@ -470,7 +470,7 @@ button:disabled {
             const status = document.getElementById('betStatus');
             status.textContent = data.status;
             status.className = "status " + String(data.status).toUpperCase();
-
+            updateControls(data.status, data.stream_enabled);
             // ✅ ENABLE DECLARE BUTTONS
             const declareButtons = document.querySelectorAll('.declare-btn');
 
@@ -663,8 +663,57 @@ button:disabled {
         } catch (err) {
             console.error(err);
         }
-        }
+    }
+    function updateControls(gameStatus, streamEnabled){
+        const startBtn = document.getElementById('btnStart');
+        const closeBtn = document.getElementById('btnClose');
 
+        const meronBtn = document.getElementById('btnMeronWin');
+        const walaBtn = document.getElementById('btnWalaWin');
+        const drawBtn = document.getElementById('btnDrawWin');
+        const cancelBtn = document.getElementById('btnCancelWin');
+
+        const streamOnBtn = document.getElementById('btnStreamOn');
+        const streamOffBtn = document.getElementById('btnStreamOff');
+
+        const betButtons = document.querySelectorAll('.bet-meron, .bet-wala, .chips button');
+
+        // 🔴 START GAME → only when RESOLVED
+        toggleBtn(startBtn, gameStatus === 'RESOLVED');
+
+        // 🔵 CLOSE GAME → only when OPEN
+        toggleBtn(closeBtn, gameStatus === 'OPEN');
+
+        // 🏁 DECLARE → only when CLOSED
+        const canDeclare = gameStatus === 'CLOSED';
+        toggleBtn(meronBtn, canDeclare);
+        toggleBtn(walaBtn, canDeclare);
+        toggleBtn(drawBtn, canDeclare);
+        toggleBtn(cancelBtn, canDeclare);
+
+        // 🎲 BETTING
+        betButtons.forEach(btn => {
+            toggleBtn(btn, gameStatus === 'OPEN');
+        });
+
+        // 📺 STREAM
+        toggleBtn(streamOnBtn, !streamEnabled);
+        toggleBtn(streamOffBtn, streamEnabled);
+    }
+
+    function toggleBtn(btn, enabled){
+        if(!btn) return;
+
+        btn.disabled = !enabled;
+
+        if(enabled){
+            btn.style.opacity = 1;
+            btn.style.pointerEvents = "auto";
+        } else {
+            btn.style.opacity = 0.5;
+            btn.style.pointerEvents = "none";
+        }
+    }
         
         
     checkSession('declarator');
