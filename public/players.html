@@ -234,7 +234,7 @@
                                 onchange="handlePlayerAction(this, this.value, ${p.id}, '${p.status}', ${isDirect})">
 
                                 <option value="">⚙️ Select Action</option>
-                                <option value="promote">⬆️ Promote</option>
+                                <option value="promote">⬆️ Promote to Agent</option>
                                 <option value="add" ${!isDirect ? 'disabled' : ''}>➕ Add Points</option>
                                 <option value="${p.status === 'suspended' ? 'activate' : 'suspend'}">
                                     ${p.status === 'suspended' ? '✅ Activate' : '⛔ Suspend'}
