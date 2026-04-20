@@ -381,6 +381,26 @@ button:disabled {
 
     async function declareWinner(side){
         try {
+
+            // 🔥 REMOVE active from all buttons first
+            document.querySelectorAll('.declare-btn')
+                .forEach(btn => btn.classList.remove('active'));
+
+            // 🔥 ADD active to the clicked button
+            if(side === 'MERON'){
+                document.getElementById('btnMeronWin').classList.add('active');
+            }
+            if(side === 'WALA'){
+                document.getElementById('btnWalaWin').classList.add('active');
+            }
+            if(side === 'DRAW'){
+                document.getElementById('btnDrawWin').classList.add('active');
+            }
+            if(side === 'CANCELLED'){
+                document.getElementById('btnCancelWin').classList.add('active');
+            }
+
+            // 🔥 YOUR EXISTING API CALL
             const res = await fetch('/api/declare-winner', {
                 method: 'POST',
                 credentials: 'include',
@@ -395,13 +415,9 @@ button:disabled {
                 return;
             }
 
-            let message = "";
-
-            if (side === "CANCELLED") {
-                message = "GAME CANCELLED - ALL BETS REFUNDED";
-            } else {
-                message = `${side} WINS!`;
-            }
+            let message = side === "CANCELLED"
+                ? "GAME CANCELLED - ALL BETS REFUNDED"
+                : `${side} WINS!`;
 
             await fetch('/api/declarator/set-header',{
                 method:'POST',
