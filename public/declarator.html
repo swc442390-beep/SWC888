@@ -30,7 +30,7 @@
 .half { width:50%; text-align:center; }
 
 .bet-buttons { display:flex; gap:10px; margin-top:10px; }
-.bet-btn { flex:1; padding:12px; font-weight:bold; background:#39393a;}
+.bet-btn { flex:1; padding:12px; font-weight:bold; }
 
 .balance-box {
     width: 100%;
@@ -149,10 +149,10 @@ button:disabled {
     </div>
     <div>CHOOSE WINNER:</div>
     <div class="bet-buttons">
-        <button id="btnMeronWin" class="bet-btn declare-btn btn-meron" onclick="declareWinner('MERON')">MERON</button>
-        <button id="btnWalaWin" class="bet-btn declare-btn btn-wala" onclick="declareWinner('WALA')">WALA</button>
-        <button id="btnDrawWin" class="bet-btn declare-btn btn-draw" onclick="declareWinner('DRAW')">DRAW</button>
-        <button id="btnCancelWin" class="bet-btn declare-btn btn-cancel" onclick="declareWinner('CANCELLED')">CANCEL</button>
+        <button id="btnMeronWin" class="bet-btn" style="background:#dc2626;" onclick="declareWinner('MERON')">MERON</button>
+        <button id="btnWalaWin" class="bet-btn" style="background:#2563eb;" onclick="declareWinner('WALA')">WALA</button>
+        <button id="btnDrawWin" class="bet-btn" style="background:#16a34a;" onclick="declareWinner('DRAW')">DRAW</button>
+        <button id="btnCancelWin" class="bet-btn" style="background:#9ca3af;" onclick="declareWinner('CANCELLED')">CANCEL</button>
     </div>
     <!-- TOTALS -->
     <div class="row"><div>TOTAL RUNNING BET:</div></div>
