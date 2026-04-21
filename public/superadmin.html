@@ -349,6 +349,29 @@
                 window.location.href = "/api/logout";
             }
         }, 1000);
+        //Code for logout
+        async function logout() {
+            try {
+                const res = await fetch('/api/logout', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+                console.log(data);
+
+                // ✅ Redirect after logout
+                showSnackbar("Logged out successfully");
+
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                showSnackbar("Logout failed", "error");
+            }
+        }
         // Call after session check
         checkSession();
         loadDashboardWallets();
