@@ -220,7 +220,7 @@ app.use(session({
     pool: pool,
     tableName: 'user_sessions'
   }),
-  secret: 'super-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
