@@ -134,7 +134,13 @@ router.get('/logout', async (req, res) => {
     );
   }
 
-  req.session.destroy(() => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: "Logout failed" });
+    }
+
+    res.clearCookie('connect.sid'); // ✅ VERY IMPORTANT
+
     res.json({ message: "Logged out" });
   });
 });
