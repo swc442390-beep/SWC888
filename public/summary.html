@@ -44,13 +44,14 @@
         </div>
 
         <div class="content">
-            <h2>Commission Logs</h2>
-            <div class="filters">
-                <input type="text" id="search" placeholder="Search username / fight #">
-                <input type="date" id="from">
-                <input type="date" id="to">
-                <button onclick="loadCommissionLogs()">Search</button>
-            </div>
+            <h2>Commission Summary</h2>
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Total Fights</th>
+                    <th>Total Commission</th>
+                </tr>
+            </thead>
             <div class="table-wrapper">
                 <table class="styled-table" id="walletTable">
                     <thead>
@@ -186,7 +187,7 @@
                 console.error(err);
             }
         }
-        async function loadCommissionLogs() {
+        async function loadCommissionSummary() {
             try {
                 const search = document.getElementById('search')?.value || '';
                 const from = document.getElementById('from')?.value || '';
@@ -195,11 +196,10 @@
                 const params = new URLSearchParams({
                     search,
                     from,
-                    to,
-                    limit: 100
+                    to
                 });
 
-                const res = await fetch(`/api/my-commission-transactions?${params}`, {
+                const res = await fetch(`/api/commission-summary?${params}`, {
                     credentials: 'include'
                 });
 
@@ -212,20 +212,16 @@
                 const tbody = document.querySelector('#walletTable tbody');
                 tbody.innerHTML = '';
 
-                data.forEach(tx => {
-                    const row = document.createElement('tr');
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
 
-                    row.innerHTML = `
-                        <td>${new Date(tx.created_at).toLocaleString()}</td>
-                        <td>${tx.source_username || '-'}</td>
-                        <td>${Number(tx.base_amount || 0).toFixed(2)}</td>
-                        <td>${Number(tx.rate || 0).toFixed(2)}%</td>
-                        <td>${Number(tx.amount || 0).toFixed(2)}</td>
-                        <td>Level ${tx.level ?? '-'}</td>
-                        <td>Fight #${tx.game_fight ?? '-'}</td>
+                    tr.innerHTML = `
+                        <td>${row.event_name || 'NO EVENT'}</td>
+                        <td>${row.total_fights}</td>
+                        <td>${Number(row.total_commission || 0).toFixed(2)}</td>
                     `;
 
-                    tbody.appendChild(row);
+                    tbody.appendChild(tr);
                 });
 
             } catch (err) {
@@ -234,7 +230,7 @@
         }
     
         checkSession();
-        loadCommissionLogs();
+        loadCommissionSummary();
         setInterval(loadWithdrawCount, 10000);
         setInterval(loadPendingCount, 10000);
     </script>

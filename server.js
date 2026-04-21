@@ -1988,3 +1988,52 @@ app.get('/api/my-result', async (req, res) => {
         winAmount: bet.winAmount
     });
 });
+// ==========================
+// COMMISSION SUMMARY API (SEARCHABLE BY EVENT NAME AND DATE RANGE)
+// ==========================
+app.get('/api/commission-summary', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        const { search = '', from = '', to = '' } = req.query;
+
+        let conditions = [`ct.user_id = $1`];
+        let values = [userId];
+        let index = 2;
+
+        if (from) {
+            conditions.push(`ct.created_at >= $${index++}`);
+            values.push(from);
+        }
+
+        if (to) {
+            conditions.push(`ct.created_at <= $${index++}`);
+            values.push(to + ' 23:59:59');
+        }
+
+        if (search) {
+            conditions.push(`g.event_name ILIKE $${index++}`);
+            values.push(`%${search}%`);
+        }
+
+        const query = `
+            SELECT 
+                g.event_name,
+                COUNT(DISTINCT g.id) AS total_fights,
+                SUM(ct.amount) AS total_commission
+            FROM commission_transactions ct
+            LEFT JOIN games g ON g.id = ct.game_id
+            WHERE ${conditions.join(' AND ')}
+            GROUP BY g.event_name
+            ORDER BY total_commission DESC
+        `;
+
+        const result = await pool.query(query, values);
+
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
