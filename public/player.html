@@ -683,12 +683,18 @@
                 data.announcement || "Welcome Players";
 
             // 🔥 FIX: UPDATE VIDEO HERE
-            if (data.video_url && currentMode === 1) {
+           if (data.video_url && currentMode === 1) {
                 const iframe = document.getElementById('videoFrame');
 
-                // only update if changed (prevents reload spam)
-                if (iframe.src !== data.video_url) {
-                    iframe.src = data.video_url;
+                let url = data.video_url;
+
+                // ✅ FORCE AUTOPLAY (works for most embeds)
+                if (!url.includes("autoplay=1")) {
+                    url += (url.includes("?") ? "&" : "?") + "autoplay=1&mute=1";
+                }
+
+                if (iframe.src !== url) {
+                    iframe.src = url;
                 }
             }
 
