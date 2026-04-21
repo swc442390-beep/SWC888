@@ -1996,7 +1996,7 @@ app.get('/api/commission-summary', async (req, res) => {
         const userId = req.session.userId;
 
         // 🔥 TEMP fallback for testing (REMOVE later)
-        const testUserId = userId || 0;
+        const testUserId = userId || 4;
 
         const { search = '', from = '', to = '' } = req.query;
 
