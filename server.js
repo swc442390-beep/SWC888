@@ -1,3 +1,4 @@
+require('dotenv').config();
 // ==========================
 // IMPORTS
 // ==========================
@@ -9,7 +10,7 @@ const pool = require('./db/connection');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const app = express();
-const allowedOrigin = 'https://swc888.live/';
+const allowedOrigin = 'https://swc888.live';
 const { placeBet } = require('./controllers/game');
 const { startDummyEngine, stopDummyEngine } = require('./services/dummyEngine');
 require('./websocket'); // start WebSocket server
