@@ -207,6 +207,7 @@
                 }
 
                 const data = await res.json();
+                console.log("SUMMARY DATA:", data); // 👈 ADD THIS
                 const tbody = document.querySelector('#walletTable tbody');
                 tbody.innerHTML = '';
 
