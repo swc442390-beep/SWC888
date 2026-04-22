@@ -623,7 +623,7 @@ button:disabled {
                     amount: pendingBet.amount
                 })
             });
-            closeBetModal();
+            
             const data = await res.json();
             document.getElementById('betAmount').value = "";
             if (!res.ok) {
@@ -631,7 +631,7 @@ button:disabled {
             }
 
             // ✅ Close modal only after success
-            
+            closeBetModal();
 
             // ❌ DO NOT send via WebSocket anymore
             // ws.send(...) ← REMOVE THIS
