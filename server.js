@@ -219,9 +219,12 @@ const buildGameState = async (userId) => {
       COALESCE(SUM(CASE WHEN b.side='MERON' AND b.user_id=$1 THEN b.amount END),0) AS "myMeron",
       COALESCE(SUM(CASE WHEN b.side='WALA' AND b.user_id=$1 THEN b.amount END),0) AS "myWala",
       COALESCE(SUM(CASE WHEN b.side='DRAW' AND b.user_id=$1 THEN b.amount END),0) AS "myDraw"
-
+      COALESCE(SUM(CASE WHEN b.side='MERON' AND b.is_dummy=false AND u.role='player' THEN b.amount END),0) AS "playerMeron",
+      COALESCE(SUM(CASE WHEN b.side='WALA' AND b.is_dummy=false AND u.role='player' THEN b.amount END),0) AS "playerWala",
+      COALESCE(SUM(CASE WHEN b.side='DRAW' AND b.is_dummy=false AND u.role='player' THEN b.amount END),0) AS "playerDraw",
     FROM games g
     LEFT JOIN bets b ON b.game_id = g.id
+    LEFT JOIN users u ON u.id = b.user_id
 
     WHERE g.id = (
       SELECT id FROM games ORDER BY created_at DESC LIMIT 1
@@ -239,7 +242,10 @@ const buildGameState = async (userId) => {
       totalDraw: 0,
       myMeron: 0,
       myWala: 0,
-      myDraw: 0
+      myDraw: 0,
+      playerMeron: 0,
+      playerWala: 0,
+      playerDraw: 0
     };
   }
 
@@ -253,7 +259,10 @@ const buildGameState = async (userId) => {
     totalDraw: Number(data.totalDraw),
     myMeron: Number(data.myMeron),
     myWala: Number(data.myWala),
-    myDraw: Number(data.myDraw)
+    myDraw: Number(data.myDraw),
+    playerMeron: Number(data.playerMeron),
+    playerWala: Number(data.playerWala),
+    playerDraw: Number(data.playerDraw)
   };
 };
 
