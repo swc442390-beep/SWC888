@@ -175,8 +175,38 @@ function applyState(payload) {
     }
 }
 // ==========================
+// LOAD ACTIVE EVENT
+// ==========================
+async function loadActiveEvent() {
+    try {
+        const res = await fetch('/api/active-event');
+        const data = await res.json();
+
+        console.log("🎯 ACTIVE EVENT:", data);
+
+        setText('eventName', data.event_name || '');
+        setText('announcement', data.announcement || '');
+
+        // 🎥 Video handling
+        const videoFrame = document.getElementById('videoFrame');
+        if (videoFrame && data.video_url) {
+            videoFrame.src = data.video_url;
+        }
+
+        // 📺 Stream toggle
+        const streamContainer = document.getElementById('streamContainer');
+        if (streamContainer) {
+            streamContainer.style.display = data.stream_enabled ? 'block' : 'none';
+        }
+
+    } catch (err) {
+        console.error("Active event load error:", err);
+    }
+}
+// ==========================
 // INIT
 // ==========================
 connectSocket();
 loadGameStatus();
 loadActiveBets();
+loadActiveEvent();
