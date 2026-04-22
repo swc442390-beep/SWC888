@@ -310,6 +310,63 @@
         side: null,
         amount: 0
     };
+    let ws;
+
+    function initWebSocket(){
+        ws = new WebSocket(`ws://${location.host}`);
+
+        ws.onopen = () => {
+            console.log("✅ WS connected");
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // 🔥 We will handle events gradually
+            handleWSMessage(data);
+        };
+
+        ws.onclose = () => {
+            console.log("❌ WS disconnected. Reconnecting...");
+            setTimeout(initWebSocket, 2000);
+        };
+    }
+    function handleWSMessage(data){
+        switch(data.type){
+
+            case "game_update":
+                updateGameUI(data.payload);
+                break;
+
+            case "balance_update":
+                updateBalanceUI(data.balance);
+                break;
+
+            case "bet_confirmed":
+                showSnackbar("Bet placed successfully!");
+                break;
+
+            case "error":
+                showSnackbar(data.message, "error");
+                break;
+        }
+    }
+    function updateGameUI(data){
+        game = data;
+
+        document.getElementById('fightNumber').textContent = data.fightNumber;
+
+        animateValue('totalMeron', prevTotals.meron, data.totalMeron);
+        prevTotals.meron = data.totalMeron;
+
+        animateValue('totalWala', prevTotals.wala, data.totalWala);
+        prevTotals.wala = data.totalWala;
+
+        animateValue('totalDraw', prevTotals.draw, data.totalDraw);
+        prevTotals.draw = data.totalDraw;
+
+        // payout logic stays SAME
+    }
     function formatNumber(num) {
         return Number(num || 0).toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -389,7 +446,13 @@
                     amount: pendingBet.amount
                 })
             });
-
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: "place_bet",
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                }));
+            }
             const data = await res.json();
 
             if (!res.ok) {
@@ -937,7 +1000,7 @@
             showSnackbar("Logout failed", "error");
         }
    }
-    setInterval(fetchGame, 1000);
+    setInterval(fetchGame, 5000);
     checkSession('player');   
     fetchGame();
     checkPlayerBalance(); // ✅ initial load
@@ -945,6 +1008,7 @@
     fetchActiveEvent();
     fetchHistory();
     loadBeads();
+    initWebSocket();
 </script>
 
 </body>
