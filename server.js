@@ -13,8 +13,8 @@ const app = express();
 const allowedOrigin = process.env.ALLOWED_ORIGIN;
 const { placeBet } = require('./controllers/game');
 const { startDummyEngine, stopDummyEngine } = require('./services/dummyEngine');
-require('./websocket'); // start WebSocket server
-const { broadcast } = require('./websocket');
+const { initWebSocket, broadcast } = require('./websocket');
+
 const authRoutes = require('./routes/auth');
 const loginLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 15 minutes
@@ -25,7 +25,11 @@ const loginLimiter = rateLimit({
   standardHeaders: true, // return rate limit info in headers
   legacyHeaders: false,  // disable X-RateLimit-* headers
 });
+const http = require('http');
+const server = http.createServer(app);
+const { initWebSocket, broadcast } = require('./websocket');
 
+initWebSocket(server);
 const settleGame = async (gameId, winner) => {
   await pool.query('BEGIN');
 
@@ -160,6 +164,9 @@ const settleGame = async (gameId, winner) => {
     console.error('SETTLE GAME ERROR:', err);
   }
 };
+
+
+
 // ==========================
 // HELPER FUNCTIONS (ADD HERE)
 // ==========================
@@ -1751,8 +1758,8 @@ app.get('/api/my-commission-transactions', isAuthenticated, async (req, res) => 
 // ==========================
 // START SERVER
 // ==========================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
 
 // ==========================
 // ACTIVE GAME BETS (WITH USERNAMES)
@@ -1974,3 +1981,8 @@ app.get('/api/commission-summary', async (req, res) => {
     }
 });
 
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+  console.log(`HTTP + WebSocket running on port ${PORT}`);
+});
