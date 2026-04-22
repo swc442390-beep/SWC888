@@ -605,47 +605,35 @@ button:disabled {
     let isPlacingBet = false;
 
     function confirmBet(){
-        ws.on('message', async (message) => {
-  const data = JSON.parse(message);
-
-  if (data.type === 'place_bet') {
-    const userId = ws.userId; // or from session
+        if (isPlacingBet) return;
 
         try {
-        await placeBet(userId, data.side, data.amount);
+            if (ws && ws.readyState === WebSocket.OPEN) {
 
-        const gameState = await buildGameState(userId);
-        const bets = await buildBetList();
+                isPlacingBet = true;
 
-        broadcast("STATE_UPDATE", {
-            game: gameState,
-            bets
-        });
+                ws.send(JSON.stringify({
+                    type: "place_bet",
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                }));
 
-        } catch (err) {
-        ws.send(JSON.stringify({
-            type: "ERROR",
-            message: err.message
-        }));
+                closeBetModal();
+
+                setTimeout(() => {
+                    isPlacingBet = false;
+                }, 1000);
+
+            } else {
+                showSnackbar("Connection not ready", "error");
+            }
+
+        } catch(err) {
+            isPlacingBet = false;
+            console.error(err);
+            showSnackbar("Bet failed", "error");
         }
     }
-    });
-    }
-    async function fetchBalance(){
-    try{
-        const res = await fetch('/api/dashboard-wallets', {
-            credentials:'include'
-        });
-
-        const data = await res.json();
-
-        const balance = Number(data.userBalance ?? 0);
-        document.getElementById('balance').textContent = formatNumber(balance);
-
-    }catch(err){
-        console.error(err);
-    }
-}
     // 📢 SHOW SNACKBAR
     function showSnackbar(message, type = "success") {
         const sb = document.getElementById("snackbar");
