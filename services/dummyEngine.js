@@ -121,30 +121,46 @@ async function runWave(declaratorId) {
             const gameId = gameRes2.rows[0].id;
 
             const totals = await pool.query(`
-                SELECT
-                    COALESCE(SUM(CASE WHEN side='MERON' THEN amount END),0) AS meron,
-                    COALESCE(SUM(CASE WHEN side='WALA' THEN amount END),0) AS wala,
-                    COALESCE(SUM(CASE WHEN side='DRAW' THEN amount END),0) AS draw
-                FROM bets
-                WHERE game_id = $1
+                SELECT 
+                    g.id,
+                    g.fight_number,
+                    g.status,
+
+                    COALESCE(SUM(CASE WHEN b.side='MERON' THEN b.amount END),0) AS "totalMeron",
+                    COALESCE(SUM(CASE WHEN b.side='WALA' THEN b.amount END),0) AS "totalWala",
+                    COALESCE(SUM(CASE WHEN b.side='DRAW' THEN b.amount END),0) AS "totalDraw",
+
+                    COALESCE(SUM(CASE WHEN b.side='MERON' AND b.user_id=$1 THEN b.amount END),0) AS "myMeron",
+                    COALESCE(SUM(CASE WHEN b.side='WALA' AND b.user_id=$1 THEN b.amount END),0) AS "myWala",
+                    COALESCE(SUM(CASE WHEN b.side='DRAW' AND b.user_id=$1 THEN b.amount END),0) AS "myDraw",
+                    COALESCE(SUM(CASE WHEN b.side='MERON' AND b.is_dummy=false AND u.role='player' THEN b.amount END),0) AS "playerMeron",
+                    COALESCE(SUM(CASE WHEN b.side='WALA' AND b.is_dummy=false AND u.role='player' THEN b.amount END),0) AS "playerWala"
+                    FROM games g
+                    LEFT JOIN bets b ON b.game_id = g.id
+                    LEFT JOIN users u ON u.id = b.user_id
+
+                    WHERE g.id = $1
+                    GROUP BY g.id
             `, [gameId]);
 
             const betsList = await pool.query(`
                 SELECT b.side, b.amount, u.username
-                FROM bets b
-                LEFT JOIN users u ON b.user_id = u.id
-                WHERE b.game_id = $1
-                ORDER BY b.created_at ASC
+                    FROM bets b
+                    JOIN users u ON u.id = b.user_id
+                    WHERE b.game_id = $1
+                    AND b.is_dummy = false
+                    AND u.role = 'player'
+                    ORDER BY b.created_at DESC
             `, [gameId]);
 
             const gameState = {
                 fightNumber: game.fight_number || game.fightNumber || 0,
                 status: game.status,
-                totalMeron: Number(totals.rows[0].meron),
-                totalWala: Number(totals.rows[0].wala),
-                totalDraw: Number(totals.rows[0].draw),
-                playerMeron: Number(totals.rows[0].meron), // temporary (or separate query)
-                playerWala: Number(totals.rows[0].wala),
+                totalMeron: Number(totals.rows[0].totalMeron),
+                totalWala: Number(totals.rows[0].totalWala),
+                totalDraw: Number(totals.rows[0].totalDraw),
+                playerMeron: Number(totals.rows[0].playerMeron), // temporary (or separate query)
+                playerWala: Number(totals.rows[0].playerWala),
                 stream_enabled: game.stream_enabled
             };
 
