@@ -354,9 +354,8 @@ button:disabled {
                     break;
 
                 case "EVENT_UPDATE":
-                    updateEventUI({
-                        announcement: msg.announcement
-                    });
+                    fetchEvent(); // 🔥 FULL SYNC
+                    break;
                     break;
 
                 case "balance":
@@ -392,8 +391,8 @@ button:disabled {
         closeStartModal();
         try {
             const fightNumber = document.getElementById('fightInput').value;
-
-            const event_name = document.getElementById('eventHeader').textContent;
+            const event_name = document.getElementById('eventName').textContent; ✅
+            
 
             const res = await fetch('/api/start-game', {
                 method: 'POST',
@@ -670,30 +669,28 @@ button:disabled {
     function updateEventUI(data){
         if (!data) return;
 
-        document.getElementById('eventHeader').textContent =
-            data.event_name || "NO EVENT";
+        // ✅ FIXED IDs
+        setText('eventName', data.event_name || "NO EVENT");
+        setText('announcement', data.announcement || "Welcome Players");
 
-        document.getElementById('announcementBar').textContent =
-            data.announcement || "Welcome Players";
-
-        // stream toggle
-        if (data.stream_enabled === false) {
-            document.getElementById('videoFrame').style.display = "none";
-            return;
-        } else {
-            document.getElementById('videoFrame').style.display = "block";
+        // 📺 STREAM TOGGLE
+        const streamContainer = document.getElementById('streamContainer');
+        if (streamContainer) {
+            streamContainer.style.display = data.stream_enabled ? 'block' : 'none';
         }
 
-        if (data.video_url) {
+        // 🎥 VIDEO
+        const frame = document.getElementById('videoFrame');
+
+        if (frame && data.video_url) {
             let url = data.video_url;
 
             if (!url.includes("autoplay=1")) {
                 url += (url.includes("?") ? "&" : "?") + "autoplay=1&mute=1";
             }
 
-            if (url !== currentVideo) {
-                document.getElementById('videoFrame').src = url;
-                currentVideo = url;
+            if (frame.src !== url) {
+                frame.src = url;
             }
         }
     }
@@ -877,7 +874,7 @@ button:disabled {
     }
 
     async function fetchEvent() {
-        const res = await fetch('/api/event');
+        const res = await fetch('/api/active-event'); 
         const data = await res.json();
         updateEventUI(data);
     }
