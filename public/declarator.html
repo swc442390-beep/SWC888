@@ -604,35 +604,44 @@ button:disabled {
     }
     let isPlacingBet = false;
 
-    function confirmBet(){
+    async function confirmBet() {
+
         if (isPlacingBet) return;
 
+        isPlacingBet = true;
+
         try {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-
-                isPlacingBet = true;
-
-                ws.send(JSON.stringify({
-                    type: "place_bet",
+            // ✅ CALL BACKEND API (this saves to DB)
+            const res = await fetch('/api/place-bet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include', // 🔥 VERY IMPORTANT for session
+                body: JSON.stringify({
                     side: pendingBet.side,
                     amount: pendingBet.amount
-                }));
+                })
+            });
 
-                closeBetModal();
+            const data = await res.json();
 
-                setTimeout(() => {
-                    isPlacingBet = false;
-                }, 1000);
-
-            } else {
-                showSnackbar("Connection not ready", "error");
+            if (!res.ok) {
+                throw new Error(data.error || "Bet failed");
             }
 
+            // ✅ Close modal only after success
+            closeBetModal();
+
+            // ❌ DO NOT send via WebSocket anymore
+            // ws.send(...) ← REMOVE THIS
+
         } catch (err) {
-            isPlacingBet = false;
             console.error(err);
-            showSnackbar("Bet failed", "error");
+            showSnackbar(err.message || "Bet failed", "error");
         }
+
+        isPlacingBet = false;
     }
     async function fetchBalance(){
     try{
