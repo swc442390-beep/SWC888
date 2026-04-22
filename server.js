@@ -193,7 +193,93 @@ const upsertActiveEvent = async ({ gameId, event_name, announcement, video_url }
     `, [gameId, event_name, announcement, video_url]);
   }
 };
+// ==========================
+// REAL-TIME STATE BUILDERS
+// ==========================
 
+// 🔥 Build GAME STATE (same as /api/game-status but reusable)
+const buildGameState = async (userId) => {
+  const result = await pool.query(`
+    SELECT 
+      g.id,
+      g.fight_number,
+      g.status,
+
+      COALESCE(SUM(CASE WHEN b.side='MERON' THEN b.amount END),0) AS "totalMeron",
+      COALESCE(SUM(CASE WHEN b.side='WALA' THEN b.amount END),0) AS "totalWala",
+      COALESCE(SUM(CASE WHEN b.side='DRAW' THEN b.amount END),0) AS "totalDraw",
+
+      COALESCE(SUM(CASE WHEN b.side='MERON' AND b.user_id=$1 THEN b.amount END),0) AS "myMeron",
+      COALESCE(SUM(CASE WHEN b.side='WALA' AND b.user_id=$1 THEN b.amount END),0) AS "myWala",
+      COALESCE(SUM(CASE WHEN b.side='DRAW' AND b.user_id=$1 THEN b.amount END),0) AS "myDraw"
+
+    FROM games g
+    LEFT JOIN bets b ON b.game_id = g.id
+
+    WHERE g.id = (
+      SELECT id FROM games ORDER BY created_at DESC LIMIT 1
+    )
+
+    GROUP BY g.id
+  `, [userId]);
+
+  if (!result.rows.length) {
+    return {
+      fightNumber: 0,
+      status: "CLOSED",
+      totalMeron: 0,
+      totalWala: 0,
+      totalDraw: 0,
+      myMeron: 0,
+      myWala: 0,
+      myDraw: 0
+    };
+  }
+
+  const data = result.rows[0];
+
+  return {
+    fightNumber: data.fight_number,
+    status: data.status,
+    totalMeron: Number(data.totalMeron),
+    totalWala: Number(data.totalWala),
+    totalDraw: Number(data.totalDraw),
+    myMeron: Number(data.myMeron),
+    myWala: Number(data.myWala),
+    myDraw: Number(data.myDraw)
+  };
+};
+
+
+// 🔥 Build BET LIST (same as /api/active-bets)
+const buildBetList = async () => {
+  const gameRes = await pool.query(`
+    SELECT id FROM games
+    ORDER BY created_at DESC
+    LIMIT 1
+  `);
+
+  if (!gameRes.rows.length) {
+    return { meron: [], wala: [] };
+  }
+
+  const gameId = gameRes.rows[0].id;
+
+  const betsRes = await pool.query(`
+    SELECT b.side, b.amount, u.username
+    FROM bets b
+    JOIN users u ON u.id = b.user_id
+    WHERE b.game_id = $1
+      AND b.is_dummy = false
+      AND u.role = 'player'
+    ORDER BY b.created_at ASC
+  `, [gameId]);
+
+  return {
+    meron: betsRes.rows.filter(b => b.side === 'MERON'),
+    wala: betsRes.rows.filter(b => b.side === 'WALA')
+  };
+};
 // ==========================
 // MIDDLEWARE
 // ==========================
@@ -849,15 +935,21 @@ app.post('/api/place-bet', isAuthenticated, async (req, res) => {
     const { side, amount } = req.body;
 
     try {
-        const result = await placeBet(userId, side, Number(amount));
+      const result = await placeBet(userId, side, Number(amount));
 
-        // 🔥 notify all clients
-        broadcast("BET_PLACED", {
-          userId,
-          side,
-          amount
-        });
-        res.json(result);
+      const result = await placeBet(userId, side, Number(amount));
+
+      // 🔥 BUILD FULL STATE
+      const gameState = await buildGameState(userId);
+      const bets = await buildBetList();
+
+      // 🔥 SEND FULL SNAPSHOT (NO MORE PARTIAL EVENTS)
+      broadcast("STATE_UPDATE", {
+        game: gameState,
+        bets
+      });
+
+      res.json(result);
 
     } catch (err) {
         console.error(err);
@@ -1203,6 +1295,13 @@ app.post('/api/start-game', isAuthenticated, async (req, res) => {
     broadcast("GAME_STARTED", {
       fightNumber,
     });
+    const gameState = await buildGameState(req.session.user.id);
+    const bets = await buildBetList();
+
+    broadcast("STATE_UPDATE", {
+      game: gameState,
+      bets
+    });
     res.json({
       message: "Game started",
       game: result.rows[0]
@@ -1259,6 +1358,13 @@ app.post('/api/close-game', isAuthenticated, async (req, res) => {
     broadcast("GAME_CLOSED", {
       gameId: game.id
     });
+    const gameState = await buildGameState(req.session.user.id);
+    const bets = await buildBetList();
+
+    broadcast("STATE_UPDATE", {
+      game: gameState,
+      bets
+    });
     return res.json({
       message: "Betting closed",
       game: updateRes.rows[0]
@@ -1299,7 +1405,13 @@ app.post('/api/declare-winner', isAuthenticated, async (req, res) => {
     broadcast("GAME_RESULT", {
       winner
     });
+    const gameState = await buildGameState(req.session.user.id);
+    const bets = await buildBetList();
 
+    broadcast("STATE_UPDATE", {
+      game: gameState,
+      bets
+    });
     let announcementText = "";
 
     if (winner === "CANCELLED") {
@@ -1862,3 +1974,4 @@ app.get('/api/commission-summary', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+

@@ -269,6 +269,9 @@ button:disabled {
         side: null,
         amount: 0
     };
+    let ws = null;
+    let userRole = "declarator"; // since this page is declarator
+    
     function formatNumber(num) {
         return Number(num || 0).toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -303,7 +306,7 @@ button:disabled {
                 .forEach(el => el.textContent = data.username);
             
             userId = data.id;
-
+            connectWS();
             
 
             // 🔥 ROLE PROTECTION
@@ -313,11 +316,45 @@ button:disabled {
             }
             // ✅ LOAD BALANCE AFTER USER IS KNOWN
             fetchBalance();
-            setInterval(fetchBalance, 1000);
+            const ws = new WebSocket("wss://your-domain.com");
+
+            ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "GAME_UPDATE") {
+                updateGameUI(data.payload);
+            }
+            };
         } catch (err) {
             console.error(err);
             window.location.href = '/';
         }
+    }
+    function connectWS() {
+        ws = new WebSocket(`ws://${location.host}`);
+
+        ws.onopen = () => {
+            console.log("WS Connected");
+
+            // 🔥 AUTH goes here
+            ws.send(JSON.stringify({
+                type: "auth",
+                userId: userId,
+                role: userRole
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            console.log("WS message:", msg);
+
+            // 👉 handle updates here later
+        };
+
+        ws.onclose = () => {
+            console.log("WS Disconnected. Reconnecting...");
+            setTimeout(connectWS, 2000); // auto-reconnect
+        };
     }
     function openStartModal(){
         document.getElementById('startModal').style.display='flex';

@@ -1,5 +1,5 @@
 let socket;
-
+let gameUpdateTimeout = null;
 // ==========================
 // CONNECT WEBSOCKET
 // ==========================
@@ -17,12 +17,8 @@ function connectSocket() {
 
         switch (data.type) {
 
-            case "BET_PLACED":
-            case "GAME_STARTED":
-            case "GAME_CLOSED":
-            case "GAME_RESULT":
-                loadGameStatus();
-                loadActiveBets();
+            case "STATE_UPDATE":
+                applyState(data.payload);
                 break;
 
             case "EVENT_UPDATE":
@@ -156,7 +152,28 @@ function updateAnnouncement(text) {
     const el = document.getElementById('announcement');
     if (el) el.textContent = text || '';
 }
+function applyState(payload) {
+    const game = payload.game;
+    const bets = payload.bets;
 
+    if (game) {
+        setText('fightNumber', game.fightNumber);
+        setText('status', game.status);
+
+        setText('meronTotal', formatNumber(game.totalMeron));
+        setText('walaTotal', formatNumber(game.totalWala));
+        setText('drawTotal', formatNumber(game.totalDraw));
+
+        setText('myMeron', formatNumber(game.myMeron));
+        setText('myWala', formatNumber(game.myWala));
+        setText('myDraw', formatNumber(game.myDraw));
+    }
+
+    if (bets) {
+        renderBetList('meronBets', bets.meron);
+        renderBetList('walaBets', bets.wala);
+    }
+}
 // ==========================
 // INIT
 // ==========================
