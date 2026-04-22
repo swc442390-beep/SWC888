@@ -419,7 +419,8 @@ button:disabled {
                     message
                 })
             });
-            
+            await fetchGame();
+            await fetchEvent();
 
         } catch (err) {
             console.error(err);
@@ -447,6 +448,7 @@ button:disabled {
                 message: `Betting is now CLOSED`
             })
         });
+        await fetchGame();
     }
 
 
@@ -495,7 +497,7 @@ button:disabled {
                 headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ message })
             });
-
+            await fetchGame();
         } catch (err) {
             console.error(err);
             showSnackbar("Network error");

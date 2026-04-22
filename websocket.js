@@ -22,9 +22,8 @@ function initWebSocket(server) {
   });
 }
 
-function broadcast(type, data) {
-  const message = JSON.stringify({ type, data });
-
+function broadcast(type, payload) {
+  const message = JSON.stringify({ type, payload });
   clients = clients.filter(client => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);
