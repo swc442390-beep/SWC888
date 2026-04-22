@@ -148,10 +148,10 @@ button:disabled {
     </div>
     <div>CHOOSE WINNER:</div>
     <div class="bet-buttons">
-        <button id="btnMeronWin" class="bet-btn" style="background:#dc2626;" onclick="declareWinner('MERON')">MERON</button>
-        <button id="btnWalaWin" class="bet-btn" style="background:#2563eb;" onclick="declareWinner('WALA')">WALA</button>
-        <button id="btnDrawWin" class="bet-btn" style="background:#16a34a;" onclick="declareWinner('DRAW')">DRAW</button>
-        <button id="btnCancelWin" class="bet-btn" style="background:#9ca3af;" onclick="declareWinner('CANCELLED')">CANCEL</button>
+        <button id="btnMeronWin" class="bet-btn declare-btn" style="background:#dc2626;" onclick="declareWinner('MERON')">MERON</button>
+        <button id="btnWalaWin" class="bet-btn declare-btn" style="background:#2563eb;" onclick="declareWinner('WALA')">WALA</button>
+        <button id="btnDrawWin" class="bet-btn declare-btn" style="background:#16a34a;" onclick="declareWinner('DRAW')">DRAW</button>
+        <button id="btnCancelWin" class="bet-btn declare-btn" style="background:#9ca3af;" onclick="declareWinner('CANCELLED')">CANCEL</button>
     </div>
     <!-- TOTALS -->
     <div class="row"><div>TOTAL RUNNING BET:</div></div>
@@ -330,11 +330,15 @@ button:disabled {
         ws.onopen = () => {
             console.log("WS Connected");
 
-            ws.send(JSON.stringify({
-                type: "auth",
-                userId: userId,
-                role: userRole
-            }));
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: "place_bet",
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                }));
+            } else {
+                showSnackbar("Connection not ready", "error");
+            }
         };
 
         ws.onmessage = (event) => {
@@ -373,31 +377,7 @@ button:disabled {
             setTimeout(connectWS, 2000);
         };
     }
-    function renderBets(data){
-        const meronDiv = document.getElementById('meronList');
-        const walaDiv = document.getElementById('walaList');
-
-        meronDiv.innerHTML = '';
-        walaDiv.innerHTML = '';
-
-        data.meron.forEach(bet => {
-            meronDiv.innerHTML += `
-                <div class="bet-item">
-                    <span>${bet.username}</span>
-                    <span>${Number(bet.amount).toLocaleString()}</span>
-                </div>
-            `;
-        });
-
-        data.wala.forEach(bet => {
-            walaDiv.innerHTML += `
-                <div class="bet-item">
-                    <span>${bet.username}</span>
-                    <span>${Number(bet.amount).toLocaleString()}</span>
-                </div>
-            `;
-        });
-    }
+    
     function openStartModal(){
         document.getElementById('startModal').style.display='flex';
     }
@@ -632,31 +612,19 @@ button:disabled {
         // ✅ OPEN CONFIRM MODAL INSTEAD
         openBetModal(side.toUpperCase(), amount);
     }
-    async function confirmBet(){
-        
+    function confirmBet(){
         try{
             ws.send(JSON.stringify({
                 type: "place_bet",
                 side: pendingBet.side,
                 amount: pendingBet.amount
             }));
-            
-            const data = await res.json();
+
             closeBetModal();
-            if (!res.ok) {
-                throw new Error(data.error || "Bet failed");
-            }
-
-            showSnackbar("Bet placed!");
-
-            document.getElementById('betAmount').value = '';
-            
-
-            
 
         }catch(err){
             console.error(err);
-            showSnackbar(err.message, "error");
+            showSnackbar("Bet failed", "error");
         }
     }
     async function fetchBalance(){
@@ -783,11 +751,9 @@ button:disabled {
             showSnackbar("Server error", "error");
         }
     }
-    let lastHash = "";
+    
 
-    function generateHash(data){
-        return JSON.stringify(data);
-    }
+    
 
     function renderBets(data){
         const meronDiv = document.getElementById('meronList');
