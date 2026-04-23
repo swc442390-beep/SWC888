@@ -393,7 +393,7 @@
                 if (data.winner === "CANCELLED") {
                     showSnackbar("Game cancelled", "warning");
                 } else {
-                    showSnackbar(`${data.winner} WINS!`);
+                    showSnackbar(`${data.payload.winner} WINS!`);
                 }
 
                 // ✅ ADD THIS
