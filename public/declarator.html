@@ -818,8 +818,8 @@ button:disabled {
         });
 
         // 📺 STREAM
-        toggleBtn(streamOnBtn, !streamEnabled);
-        toggleBtn(streamOffBtn, streamEnabled);
+        toggleBtn(streamOnBtn, streamEnabled);
+        toggleBtn(streamOffBtn, !streamEnabled);
     }
 
     function toggleBtn(btn, enabled){
@@ -827,7 +827,13 @@ button:disabled {
 
         btn.disabled = !enabled;
 
-        
+        if(enabled){
+            btn.style.opacity = 1;
+            btn.style.pointerEvents = "auto";
+        } else {
+            btn.style.opacity = 0.5;
+            btn.style.pointerEvents = "none";
+        }
     }
     function openBetModal(side, amount){
         pendingBet.side = side;
