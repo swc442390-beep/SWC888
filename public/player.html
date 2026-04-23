@@ -310,6 +310,109 @@
         side: null,
         amount: 0
     };
+    let ws = null;
+    let wsConnected = false;
+
+    function initWebSocket(){
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("⚠️ WS already connected");
+        return;
+    }
+
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+        ws = new WebSocket(`${protocol}://${location.host}`);
+
+        ws.onopen = () => {
+            console.log("✅ WS connected");
+            wsConnected = true;
+
+            // 🔥 start heartbeat
+            startHeartbeat();
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            handleWSMessage(data);
+        };
+
+        ws.onclose = () => {
+            console.log("❌ WS disconnected. Reconnecting...");
+            wsConnected = false;
+
+            stopHeartbeat();
+
+            setTimeout(initWebSocket, 3000);
+        };
+
+        ws.onerror = (err) => {
+            console.error("WS Error:", err);
+            ws.close();
+        };
+    }
+    let heartbeatInterval = null;
+
+    function startHeartbeat(){
+        stopHeartbeat();
+
+        heartbeatInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "ping" }));
+            }
+        }, 25000); // every 25s
+    }
+
+    function stopHeartbeat(){
+        if (heartbeatInterval){
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+    }
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            console.log("👀 Tab active → reconnect WS");
+            initWebSocket();
+        }
+    });
+    function handleWSMessage(data){
+        console.log("📡 WS:", data);
+
+        switch(data.type){
+
+            case "STATE_UPDATE":
+                applyState(data.payload);   // ✅ reuse existing function
+                break;
+
+            case "EVENT_UPDATE":
+                document.getElementById('announcementBar').textContent =
+                    data.announcement || "";
+                break;
+
+            case "GAME_RESULT":
+                // optional but nice UX
+                if (data.winner === "CANCELLED") {
+                    showSnackbar("Game cancelled", "warning");
+                } else {
+                    showSnackbar(`${data.winner} WINS!`);
+                }
+                break;
+        }
+    }
+    function updateGameUI(data){
+        game = data;
+
+        document.getElementById('fightNumber').textContent = data.fightNumber;
+
+        animateValue('totalMeron', prevTotals.meron, data.totalMeron);
+        prevTotals.meron = data.totalMeron;
+
+        animateValue('totalWala', prevTotals.wala, data.totalWala);
+        prevTotals.wala = data.totalWala;
+
+        animateValue('totalDraw', prevTotals.draw, data.totalDraw);
+        prevTotals.draw = data.totalDraw;
+
+        // payout logic stays SAME
+    }
     function formatNumber(num) {
         return Number(num || 0).toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -389,7 +492,13 @@
                     amount: pendingBet.amount
                 })
             });
-
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: "place_bet",
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                }));
+            }
             const data = await res.json();
 
             if (!res.ok) {
@@ -937,7 +1046,7 @@
             showSnackbar("Logout failed", "error");
         }
    }
-    setInterval(fetchGame, 1000);
+    setInterval(fetchGame, 5000);
     checkSession('player');   
     fetchGame();
     checkPlayerBalance(); // ✅ initial load
@@ -945,6 +1054,7 @@
     fetchActiveEvent();
     fetchHistory();
     loadBeads();
+    initWebSocket();
 </script>
 
 </body>
