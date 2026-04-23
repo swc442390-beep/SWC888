@@ -95,7 +95,12 @@
             loadPendingCount();
             loadWithdrawCount();
         }
-
+        function formatMoney(num){
+            return Number(num || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
        
         // =========================
         // Hamburger & overlay
@@ -149,15 +154,17 @@
                     const row = document.createElement('tr');
 
                     const typeIcon = tx.type === 'credit' ? '↑' : '↓';
+                    const typeColor = tx.type === 'credit' ? 'red' : 'green';
 
                     row.innerHTML = `
                         <td>${new Date(tx.created_at).toLocaleString()}</td>
-                        <td>${typeIcon} ${tx.type}</td>
-                        <td>${tx.amount}</td>
-                        <td>${tx.balance_after}</td>
-                        <td>${tx.description}</td>
+                        <td style="color: ${typeColor}; font-weight: bold;">
+                            ${typeIcon} ${tx.type}
+                        </td>
+                        <td>${formatMoney(tx.amount)}</td>
+                        <td>${formatMoney(tx.balance_after)}</td>
+                        <td>${formatDescription(tx.description)}</td>
                     `;
-
                     tbody.appendChild(row);
                 });
 
