@@ -396,6 +396,36 @@
                     showSnackbar("Game cancelled", "warning");
                 } else {
                     showSnackbar(`${data.winner} WINS!`);
+                    // 🔥 RETRY SYSTEM (better than single delay)
+                    let tries = 0;
+
+                    const interval = setInterval(async () => {
+                        tries++;
+
+                        const res = await fetch('/api/my-result', {
+                            credentials: 'include'
+                        });
+
+                        const result = await res.json();
+
+                        console.log("Retry result:", result);
+
+                        if (result.result === "WIN" || result.result === "LOSE") {
+
+                            if (result.result === "WIN") {
+                                showSnackbar(`🎉 You won ₱${formatNumber(result.winAmount)}`);
+                            } else {
+                                showSnackbar("😢 You lost this round", "warning");
+                            }
+
+                            clearInterval(interval);
+                        }
+
+                        if (tries >= 5) {
+                            clearInterval(interval);
+                        }
+
+                    }, 500);
                 }
                 break;
         }
@@ -1112,10 +1142,14 @@
 
             const data = await res.json();
 
+            console.log("MY RESULT:", data); // 🔥 ADD THIS
+
             if (data.result === "WIN") {
                 showSnackbar(`🎉 You won ₱${formatNumber(data.winAmount)}`);
             } else if (data.result === "LOSE") {
                 showSnackbar("😢 You lost this round", "warning");
+            } else if (data.result === "NO_BET") {
+                console.log("No bet found");
             }
 
         } catch (err) {
