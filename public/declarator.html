@@ -561,7 +561,7 @@ button:disabled {
             data.totalWala +
             (data.totalDraw || 0);
 
-        const CUT = 0.915;
+        const CUT = STANDARDCUT;
 
         const payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
         const payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
