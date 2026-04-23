@@ -1,526 +1,1213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Players Management - SWC888</title>
-    <link rel="stylesheet" href="style.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Player - SWC888</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.video-container { width:100%; aspect-ratio:16/9; margin-bottom:15px; }
+.video-container iframe { width:100%; height:100%; border:none; }
+
+.betting-card { background:#1e293b; border-radius:12px; padding:15px; overflow: visible; }
+
+.row { display:flex; justify-content:space-between; margin-bottom:8px; }
+.header-row { font-weight:bold; color:#14b8a6; }
+
+.status.OPEN { color:#2ecc71; }
+.status.CLOSED { color:#f1c40f; }
+.status.CANCELLED { color:#e74c3c; }
+
+.total-box { width:48%; padding:10px; border-radius:6px; font-weight:bold; }
+.meron-bg { background:#7f1d1d; }
+.wala-bg { background:#1e3a8a; }
+
+.label-row div { width:50%; text-align:center; padding:10px; font-weight:bold; }
+.label-meron { background:#dc2626; }
+.label-wala { background:#2563eb; }
+
+.half { width:50%; text-align:center; }
+
+.bet-buttons { display:flex; gap:10px; margin-top:10px; }
+.bet-btn { flex:1; padding:12px; font-weight:bold; }
+.bet-meron { background:#dc2626; }
+.bet-wala { background:#2563eb; }
+
+.balance-box { margin-top:10px; padding:10px; background:#0f172a; border:1px solid #14b8a6; border-radius:6px; text-align:center; }
+
+.amount-input { width:100%; padding:10px; margin-top:10px; border-radius:6px; border:none; }
+
+.chips { display:flex; gap:5px; overflow-x:auto; margin-top:10px; }
+.chips button { padding:6px 10px; font-size:12px; }
+
+#beads {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 30px);
+  gap: 5px;
+  margin-top: 10px;
+  max-height: 250px;
+  overflow-y: auto;   /* 🔥 change this */
+  overflow-x: hidden; /* 🔥 prevent sideways mess */
+}
+
+.bead {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: white;
+  text-align: center;
+  line-height: 30px;
+  font-size: 12px;
+}
+#beadPlate {
+    display: grid;
+    grid-auto-flow: column; /* columns grow horizontally */
+    grid-template-rows: repeat(6, 14px); /* 6 rows */
+    gap: 4px;
+
+    justify-content: start; /* align left */
+    align-content: start;
+
+    max-width: 100%;
+    overflow-x: auto;   /* ✅ horizontal scroll */
+    overflow-y: hidden;
+
+    padding: 6px;
+    background: #0f172a;
+    border-radius: 6px;
+
+    box-sizing: border-box;
+}
+.meron { background: red; }
+.wala { background: blue; }
+.draw { background: green; }
+.cancelled { background: gray; }
+</style>
 </head>
 
 <body class="dashboard-body">
-
-    <!-- SIDEBAR (COPY SAME SIDEBAR HERE) -->
+    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
-        <h2>Welcome, <span class="username">Agent</span></h2>
+        <h2>Welcome, <span class="username">Player</span></h2>
 
-        <a href="admin.html">🏠 Dashboard</a>
-        <a href="summary.html" id="summaryLink">📊 Summary Report</a>
-        <a href="wallet-logs.html">📄 Wallet Logs</a>
-        <a href="commission-logs.html">💰 Commission Logs</a>
-        <a href="withdrawal.html">💸 Commission Withdrawals 
-            <span id="withdrawBadge" class="badge blue" style="display:none;">0</span>
-        </a>
-        <!--<a href="archives.html">🗂 Archives</a>-->
+        <!-- MAIN -->
+        <a href="player.html">🏠 Play / Dashboard</a>
+        <a href="wallet-logs-player.html">📄 Wallet Transactions</a>
+        <a href="#" onclick="openWithdrawModal()">💸 Withdrawal Request</a>
 
-        <div class="category">Downlines</div>
-        <a href="agents.html">👥 Agents</a>
-        <a href="players.html">🧑 Players</a>
-        <a href="pending.html">⏳ Pending Approvals 
-            <span id="pendingBadge" class="badge red" style="display:none;">0</span>
-        </a>
-
-        <div class="category">Settings</div>
-        <!--<a href="account.html">👥 Account Management</a>-->
-        <a href="change-password.html">🔑 Change Password</a>
+        <div class="category">Account</div>
+        <a href="change-password-player.html">🔑 Change Password</a>
         <a href="#" onclick="logout()">🚪 Logout</a>
     </div>
-    <div id="overlay" class="overlay"></div>
-    <!-- MAIN -->
-    <div class="main">
 
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+    
+    <div class="main">
         <div class="header">
             <div class="hamburger" onclick="toggleSidebar()">☰</div>
-        </div>
-
+        </div>  
         <div class="content">
-            <h2>Players</h2>
-
-            <div class="membership-card">
-
-                <!-- FILTER -->
-                <div class="filter-bar">
-                    <!--<select id="statusFilter" class="styled-select" onchange="loadPlayers()">-->
-                    <select id="statusFilter" class="membership-link" onchange="loadPlayers()">
-                        <option value="">All Status</option>
-                        <option value="online">🟢 Active</option>
-                        <option value="offline">⚪ Offline</option>
-                        <option value="suspended">🔴 Suspended</option>
-                    </select>
-                </div>
-
-                <!-- TABLE -->
-                <div class="table-wrapper">
-                    <table class="styled-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Actions</th>
-                                <th>Wallet</th>
-                                <th>Status</th>
-                                <th>Registration</th>
-                            </tr>
-                        </thead>
-                        <tbody id="playersTable"></tbody>
-                    </table>
-                </div>
-            </div>
             <div id="snackbar"></div>
-        </div>
-        <!-- MODAL -->
-        <div id="pointsModal" class="modal">
-            <div class="modal-content">
-                <h3>Add Points</h3>
-                <input type="number" id="pointsInput" style="width: 100%;padding: 12px;" placeholder="Enter points">
-                <button onclick="confirmAddPoints()">✅ Confirm</button>
-                <button onclick="closeModal()">❌ Cancel</button>
+            <div class="game-layout">
+                <!-- LEFT: VIDEO -->
+                <div class="video-section">
+                    <div id="eventHeader" style="
+                        text-align:left;
+                        font-size:12px;
+                        font-weight:bold;
+                        margin-bottom:10px;
+                        color:#22c55e;
+                    ">
+                        LOADING EVENT...
+                    </div>
+                    <div class="video-container" style="position:relative;">
+
+                        <!-- VIDEO 1: IFRAME -->
+                        <iframe 
+                            id="videoFrame"
+                            allow="autoplay; fullscreen"
+                            allowfullscreen
+                            style="display:block;">
+                        </iframe>
+
+                        
+
+                        <!-- SWITCH BUTTONS -->
+                        <div style="
+                            position:absolute;
+                            top:10px;
+                            right:10px;
+                            display:flex;
+                            gap:5px;
+                            z-index:10;
+                        ">
+                            <!--<button onclick="switchVideo(1)">Video 1</button>
+                            <button onclick="switchVideo(2)">Video 2</button>-->
+                        </div>
+
+                    </div>
+                    <marquee id="announcementBar" style="
+                        margin-top:5px;
+                        color:#facc15;
+                        font-weight:bold;
+                    ">
+                        Welcome to SWC888
+                    </marquee>
+                </div>
+
+                <!-- RIGHT: BETTING -->
+                <div class="betting-section">
+                    <div class="betting-card">
+
+                        <div class="row header-row">
+                            <div>BETTING</div>
+                            <div>FIGHT # <span id="fightNumber">0</span></div>
+                        </div>
+
+                        <div class="row">
+                            <div>Status:</div>
+                            <div id="betStatus" class="status OPEN">OPEN</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="total-box meron-bg"><span id="totalMeron">0</span></div>
+                            <div class="total-box wala-bg"><span id="totalWala">0</span></div>
+                        </div>
+
+                        <div class="row label-row">
+                            <div class="label-meron">MERON</div>
+                            <div class="label-wala">WALA</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="half">ODDS: <span id="payoutMeron">0</span></div>
+                            <div class="half">ODDS: <span id="payoutWala">0</span></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="half">
+                                Your Bet: <span id="myMeron">0</span><br>
+                                Win: <span id="winMeron">0</span>
+                            </div>
+                            <div class="half">
+                                Your Bet: <span id="myWala">0</span><br>
+                                Win: <span id="winWala">0</span>
+                            </div>
+                        </div>
+
+                        <div class="bet-buttons">
+                            <button class="bet-btn bet-meron" onclick="placeBet('meron')">BET MERON</button>
+                            <button class="bet-btn bet-wala" onclick="placeBet('wala')">BET WALA</button>
+                        </div>
+
+                        <div class="balance-box">
+                            Balance: <span id="balance">0</span>
+                        </div>
+
+                        <input type="number" id="betAmount" class="amount-input" placeholder="Enter amount">
+
+                        <div class="chips">
+                            <button onclick="setAmount(20)">20</button>
+                            <button onclick="setAmount(50)">50</button>
+                            <button onclick="setAmount(100)">100</button>
+                            <button onclick="setAmount(200)">200</button>
+                            <button onclick="setAmount(500)">500</button>
+                            <button onclick="setAmount(1000)">1000</button>
+                        </div>
+                        <div class="bet-buttons" style="margin-top:15px;">
+                            <button class="bet-btn" style="background:#6b7280;" onclick="placeBet('draw')">
+                                BET DRAW
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="total-box" style="background:#374151; width:100%;">
+                                DRAW: <span id="totalDraw">0</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="half">PAYOUT: <span id="payoutDraw">0</span></div>
+                            <div class="half">
+                                Your Bet: <span id="myDraw">0</span><br>
+                                Win: <span id="winDraw">0</span>
+                            </div>
+                        </div>
+                        <div id="beadPlate"></div> <!-- bead plate -->
+                        <!-- ✅ NEW TOTALS -->
+                        <div id="totals" style="
+                        margin-top:15px;
+                        text-align:center;
+                        font-weight:bold;
+                        color:#facc15;
+                        ">
+                        Loading...
+                        </div>
+
+                        <!-- ✅ NEW NUMBERED BEADS -->
+                        <div id="beads"></div>
+                </div>
             </div>
-        </div>
-        <div id="confirmModal" class="modal">
-            <div class="modal-content">
-                <h3 id="confirmTitle">Confirm Action</h3>
-                <p id="confirmMessage"></p>
-                <button onclick="confirmAction()">✅ Confirm</button>
-                <button onclick="closeConfirmModal()">❌ Cancel</button>
-            </div>
-        </div>
+        </div> <!-- game-layout -->
+        
+        <!-- MODAL FOR WITHDRAWAL REQUEST-->
         <div id="withdrawModal" class="modal">
             <div class="modal-content">
-                <h3>Withdraw Points</h3>
-                <input type="number" id="withdrawInput" placeholder="Enter amount" style="width:100%; padding:12px;">
-                <button onclick="confirmWithdraw()">💸 Confirm</button>
-                <button onclick="closeWithdrawModal()">❌ Cancel</button>
+                <h3>Withdrawal Request</h3>
+
+                <input type="number" id="withdrawAmount" placeholder="Enter points" />
+
+                <div style="margin-top:10px;">
+                    <button onclick="submitWithdraw()">Submit</button>
+                    <button onclick="closeWithdrawModal()">Cancel</button>
+                </div>
             </div>
         </div>
-        <footer>
-            © 2024 SWC888. All rights reserved.
-        </footer>
+        <!-- BET CONFIRM MODAL -->
+        <div id="betConfirmModal" class="modal">
+            <div class="modal-content">
+                <h3>Confirm Bet</h3>
+                <p id="confirmText"></p>
 
-    </div>
+                <div style="margin-top:10px;">
+                    <button onclick="confirmBet()">CONFIRM</button>
+                    <button onclick="closeBetModal()">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- content -->
+    <footer>
+        © 2024 Pitwarriors619. All rights reserved.
+    </footer>
+</div> <!-- main -->
 
-    <script>
-        
-        function formatNumber(amount) {
-            return new Intl.NumberFormat('en-PH', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(amount);
+<script>
+    let game = {};
+    let payoutMeron = 0;
+    let payoutWala = 0;
+    let payoutDraw = 0;
+    let lastStatus = null;
+    let lastUIUpdate = 0;
+    let prevTotals = {
+        meron: 0,
+        wala: 0,
+        draw: 0,
+        balance: 0
+    };
+    let myBets = {
+        meron: 0,
+        wala: 0,
+        draw: 0
+    };
+    let pendingBet = {
+        side: null,
+        amount: 0
+    };
+    let ws = null;
+    let wsConnected = false;
+
+    function initWebSocket(){
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("⚠️ WS already connected");
+        return;
+    }
+
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+        ws = new WebSocket(`${protocol}://${location.host}`);
+
+        ws.onopen = () => {
+            console.log("✅ WS connected");
+            wsConnected = true;
+
+            ws.send(JSON.stringify({
+                type: "auth",
+                role: "player"
+            }));
+
+            startHeartbeat();
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            handleWSMessage(data);
+        };
+
+        ws.onclose = () => {
+            console.log("❌ WS disconnected. Reconnecting...");
+            wsConnected = false;
+
+            stopHeartbeat();
+
+            setTimeout(initWebSocket, 3000);
+        };
+
+        ws.onerror = (err) => {
+            console.error("WS Error:", err);
+            ws.close();
+        };
+    }
+    let heartbeatInterval = null;
+
+    function startHeartbeat(){
+        stopHeartbeat();
+
+        heartbeatInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "ping" }));
+            }
+        }, 25000); // every 25s
+    }
+
+    function stopHeartbeat(){
+        if (heartbeatInterval){
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
         }
-        async function checkSession() {
-            try {
-                const res = await fetch('/api/dashboard', {
-                    credentials: 'include'
+    }
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            console.log("👀 Tab active → reconnect WS");
+            initWebSocket();
+        }
+    });
+    function handleWSMessage(data){
+        console.log("📡 WS:", data);
+
+        switch(data.type){
+
+            case "STATE_UPDATE":
+                if (data.payload?.game) {
+                    updateGameUI(data.payload.game);
+                    //alert(JSON.stringify(data.payload.game, null, 2));
+                }
+                break;
+
+            case "EVENT_UPDATE":
+                document.getElementById('announcementBar').textContent =
+                    data.announcement || "";
+                break;
+
+            case "GAME_RESULT":
+                if (data.winner === "CANCELLED") {
+                    showSnackbar("Game cancelled", "warning");
+                } else {
+                    showSnackbar(`${data.payload.winner} WINS!`);
+                }
+
+                // ✅ ADD THIS
+                fetchMyResult();
+
+                break;
+        }
+    }
+    function updateGameUI(data){
+        game = data;
+
+        // ✅ Fight number
+        const fightEl = document.getElementById('fightNumber');
+        if (fightEl.textContent != data.fightNumber) {
+            fightEl.textContent = data.fightNumber;
+        }
+
+        // =========================
+        // 🔥 TOTALS (only if changed)
+        // =========================
+        if (data.totalMeron !== prevTotals.meron) {
+            animateValue('totalMeron', prevTotals.meron, data.totalMeron);
+            prevTotals.meron = data.totalMeron;
+        }
+
+        if (data.totalWala !== prevTotals.wala) {
+            animateValue('totalWala', prevTotals.wala, data.totalWala);
+            prevTotals.wala = data.totalWala;
+        }
+
+        if (data.totalDraw !== prevTotals.draw) {
+            animateValue('totalDraw', prevTotals.draw, data.totalDraw);
+            prevTotals.draw = data.totalDraw;
+        }
+
+        // =========================
+        // 💰 PAYOUT COMPUTATION
+        // =========================
+        const totalPool =
+            data.totalMeron +
+            data.totalWala +
+            (data.totalDraw || 0);
+
+        const CUT = 0.915;
+
+        payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
+        payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
+
+        const DRAW_MULTIPLIER = 8;
+        payoutDraw = DRAW_MULTIPLIER;
+        document.getElementById('winMeron').textContent =
+            (myBets.meron * payoutMeron).toFixed(2);
+
+        document.getElementById('winWala').textContent =
+            (myBets.wala * payoutWala).toFixed(2);
+
+        document.getElementById('winDraw').textContent =
+            (myBets.draw * payoutDraw).toFixed(2);
+        // ✅ Update payout UI only if changed
+        const payoutMeronEl = document.getElementById('payoutMeron');
+        const payoutWalaEl = document.getElementById('payoutWala');
+        const payoutDrawEl = document.getElementById('payoutDraw');
+
+        const newMeronText = payoutMeron.toFixed(2);
+        const newWalaText = payoutWala.toFixed(2);
+        const newDrawText = payoutDraw + "x";
+
+        if (payoutMeronEl.textContent !== newMeronText) {
+            payoutMeronEl.textContent = newMeronText;
+        }
+
+        if (payoutWalaEl.textContent !== newWalaText) {
+            payoutWalaEl.textContent = newWalaText;
+        }
+
+        if (payoutDrawEl.textContent !== newDrawText) {
+            payoutDrawEl.textContent = newDrawText;
+        }
+
+        // =========================
+        // 🏆 WIN CALCULATION (based on CURRENT UI values)
+        // =========================
+        const myMeron = myBets.meron;
+        const myWala = myBets.wala;
+        const myDraw = myBets.draw;
+
+        const currentInput = Number(document.getElementById('betAmount').value);
+
+        
+
+        // =========================
+        // 🔄 STATUS HANDLING
+        // =========================
+        const statusEl = document.getElementById('betStatus');
+        const gameStatus = (data.status || "CLOSED").toUpperCase();
+
+        if (statusEl.textContent !== gameStatus) {
+            statusEl.textContent = gameStatus;
+            statusEl.className = "status " + gameStatus;
+        }
+
+        game.status = gameStatus;
+
+        updateControls(gameStatus, data.stream_enabled);
+
+        // =========================
+        // 🔥 STATUS CHANGE DETECTION
+        // =========================
+        if (gameStatus !== lastStatus){
+
+            if (gameStatus !== 'OPEN'){
+                disableBetting("Betting is " + gameStatus);
+
+                if (gameStatus === 'RESOLVED'){
+                    fetchMyResult();
+                    checkPlayerBalance();
+                    fetchHistory();
+                    loadBeads();
+                    myBets = { meron: 0, wala: 0, draw: 0 };
+
+                    document.getElementById('myMeron').textContent = 0;
+                    document.getElementById('myWala').textContent = 0;
+                    document.getElementById('myDraw').textContent = 0;
+                    document.getElementById('winMeron').textContent = 0;
+                    document.getElementById('winWala').textContent = 0;
+                    document.getElementById('winDraw').textContent = 0;
+                }
+
+            } else {
+                document.querySelectorAll('.bet-btn').forEach(btn=>{
+                    btn.disabled = false;
+                    btn.style.opacity = 1;
                 });
+            }
 
-                if (res.status === 401) {
-                    window.location.href = '/';
-                    return;
-                }
+            lastStatus = gameStatus;
 
-                const data = await res.json();
-                if (data.role !== 'admin') {
-                    const summaryLink = document.getElementById('summaryLink');
-                    if (summaryLink) summaryLink.style.display = 'none';
-                }
-                document.querySelectorAll('.username')
-                    .forEach(el => el.textContent = data.username);
-                // ✅ LOAD PLAYERS HERE
-                loadPlayers();
-            } catch (err) {
-                console.error(err);
+            fetchActiveEvent();
+        }
+    }
+    function formatNumber(num) {
+        return Number(num || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    async function checkSession(requiredRole = null) {
+        try {
+            const res = await fetch('/api/dashboard', {
+                credentials: 'include'
+            });
+
+            if (res.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+
+            const data = await res.json();
+
+            // ✅ Set username
+            document.querySelectorAll('.username')
+                .forEach(el => el.textContent = data.username);
+
+            // 🔥 ROLE PROTECTION
+            if (requiredRole && data.role !== requiredRole) {
+                alert("Unauthorized access");
                 window.location.href = '/';
             }
-            loadPendingCount();
-            loadWithdrawCount();
+
+        } catch (err) {
+            console.error(err);
+            window.location.href = '/';
+        }
+    }
+
+    function setAmount(val){
+        document.getElementById('betAmount').value = val;
+    }
+
+    function placeBet(side){
+        const amount = Number(document.getElementById('betAmount').value);
+        const balance = Number(document.getElementById('balance').textContent);
+
+        if (game.status !== 'OPEN') {
+            return showSnackbar("Betting is closed", "warning");
         }
 
-        
-        // =========================
-        // Hamburger & overlay
-        // =========================
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
+        if (!amount || amount <= 0) {
+            return showSnackbar("Enter valid amount", "warning");
+        }
 
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active'); // show overlay
-            } else {
-                sidebar.classList.toggle('collapsed');
+        if (amount > balance) {
+            return showSnackbar("Insufficient balance", "error");
+        }
+
+        // ✅ STORE pending bet
+        pendingBet.side = side.toUpperCase();
+        pendingBet.amount = amount;
+
+        // ✅ SET MODAL TEXT
+        document.getElementById('confirmText').innerText =
+            `You are betting ₱${amount.toLocaleString()} on ${pendingBet.side}`;
+
+        // ✅ OPEN MODAL
+        document.getElementById('betConfirmModal').style.display = 'flex';
+    }
+    // ✅ CLOSE BET MODAL
+    async function confirmBet(){
+        try {
+            const res = await fetch('/api/place-bet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Bet failed");
             }
+
+            // ✅ 🔥 INSTANT UI UPDATE
+            updateMyBetUI(pendingBet.side, pendingBet.amount);
+
+            // ✅ WS (optional)
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: "place_bet",
+                    side: pendingBet.side,
+                    amount: pendingBet.amount
+                }));
+            }
+
+            showSnackbar("Bet placed successfully!");
+            
+            document.getElementById('betAmount').value = '';
+            closeBetModal();
+
+            // optional refresh
+            checkPlayerBalance();
+
+        } catch (err) {
+            console.error(err);
+            showSnackbar(err.message, "error");
         }
+    }
+    function closeBetModal(){
+        document.getElementById('betConfirmModal').style.display = 'none';
+    }
+    
+    // 🔥 LIVE GAME STATUS
+    async function fetchGame(){
+        try{
+            
+            const res = await fetch('/api/game-status',{credentials:'include'});
+            const data = await res.json();
+            game = data; // ✅ store latest game globally
+            document.getElementById('fightNumber').textContent = data.fightNumber;
+            animateValue('totalMeron', prevTotals.meron, data.totalMeron);
+            prevTotals.meron = data.totalMeron;document.getElementById('totalMeron').textContent = formatNumber(data.totalMeron);
+            animateValue('totalWala', prevTotals.wala, data.totalWala);
+            prevTotals.wala = data.totalWala;
+            animateValue('totalDraw', prevTotals.draw, data.totalDraw);
+            prevTotals.draw = data.totalDraw;
 
-        // =========================
-        // Load pending approvals count
-        // =========================
-        async function loadPendingCount() {
-            try {
-                const res = await fetch('/api/pending-count', {
-                    credentials: 'include'
-                });
+            const totalPool =
+                data.totalMeron +
+                data.totalWala +
+                (data.totalDraw || 0);
 
-                const data = await res.json();
+            const CUT = 0.915; // 8.5% cut for the house
+            //const CUT = 0.935; // 5% cut for the house (for better player retention)
+            // avoid divide-by-zero
+            payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
+            payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
+            const DRAW_MULTIPLIER = 8;
+            payoutDraw = DRAW_MULTIPLIER;
+            document.getElementById('payoutMeron').textContent =
+                (payoutMeron).toFixed(2);
 
-                const badge = document.getElementById('pendingBadge');
+            document.getElementById('payoutWala').textContent =
+                (payoutWala).toFixed(2);
+            document.getElementById('payoutDraw').textContent =
+                payoutDraw + "x";
+            const myMeron = Number(data.myMeron || 0);
+            const myWala = Number(data.myWala || 0);
+            const myDraw = Number(data.myDraw || 0);
 
-                if (data.count > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = data.count;
+            document.getElementById('myMeron').textContent = myMeron;
+            document.getElementById('myWala').textContent = myWala;
+            document.getElementById('myDraw').textContent = myDraw;
+
+            // ✅ Only update win if no manual input (prevents override)
+            const currentInput = Number(document.getElementById('betAmount').value);
+
+            if (!currentInput){
+                document.getElementById('winMeron').textContent =
+                    (myMeron * payoutMeron).toFixed(2);
+
+                document.getElementById('winWala').textContent =
+                    (myWala * payoutWala).toFixed(2);
+
+                document.getElementById('winDraw').textContent =
+                    (myDraw * payoutDraw).toFixed(2);
+            }
+                    
+
+            const status = document.getElementById('betStatus');
+            const gameStatus = (data.status || "CLOSED").toUpperCase();
+
+            status.textContent = gameStatus;
+            status.className = "status " + gameStatus;
+            game.status = gameStatus;
+            updateControls(gameStatus, game.stream_enabled);
+            if (data.status !== lastStatus) {
+
+                if (gameStatus !== 'OPEN') {
+                    disableBetting("Betting is " + gameStatus);
+                    if (gameStatus === 'RESOLVED') {
+                        // 🔥 ADD THESE HERE
+                        fetchMyResult();
+                        checkPlayerBalance();
+                        fetchHistory();
+                        loadBeads();
+                    }
                 } else {
-                    badge.style.display = 'none';
+                    document.querySelectorAll('.bet-btn').forEach(btn=>{
+                        btn.disabled = false;
+                        btn.style.opacity = 1;
+                    });
+                    
+                    
                 }
-
-            } catch (err) {
-                console.error(err);
+                lastStatus = data.status;
+                fetchActiveEvent();
             }
-        }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
 
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
+        }catch(e){
+            console.error(e);
         }
+    }
+    // 💰 CHECK BALANCE
+    async function checkPlayerBalance(){
+        try {
+            const res = await fetch('/api/dashboard-wallets',{
+                credentials:'include'
+            });
 
-        // Close sidebar if click outside (mobile)
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
-                if (!sidebar.contains(event.target) && !event.target.classList.contains('hamburger')) {
-                    closeSidebar();
-                }
+            if (!res.ok) {
+                console.error("Wallet API failed:", res.status);
+                return;
             }
+
+            const data = await res.json();
+
+            console.log("Wallet API:", data); // DEBUG
+
+            const balance = Number(data.userBalance ?? 0);
+
+            document.getElementById('balance').textContent = formatNumber(balance);
+
+            if(balance <= 0){
+                disableBetting("No balance. Contact your agent.");
+            }
+
+        } catch(err){
+            console.error("Balance fetch error:", err);
+        }
+    }
+    // 🚫 DISABLE BETTING
+    function disableBetting(message){
+        document.querySelectorAll('.bet-btn').forEach(btn=>{
+            btn.disabled = true;
+            btn.style.opacity = 0.5;
         });
+
+        if(message){
+            showSnackbar(message);
+        }
+    }
+    // 📢 SHOW SNACKBAR
+    function showSnackbar(message, type = "success") {
+        const sb = document.getElementById("snackbar");
+
+        sb.className = ""; // RESET
+
+        sb.textContent = message;
+
+        if(type === "error") sb.classList.add("error");
+        if(type === "warning") sb.classList.add("warning");
+
+        sb.classList.add("show");
+
+        setTimeout(()=>{
+            sb.classList.remove("show");
+        },3000);
+    }
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        } else {
+            sidebar.classList.toggle('collapsed');
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // close when clicking outside (mobile)
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.querySelector('.hamburger');
+
+        if (window.innerWidth <= 768 &&
+            sidebar.classList.contains('active')) {
+
+            if (!sidebar.contains(event.target) &&
+                !hamburger.contains(event.target)) {
+                closeSidebar();
+            }
+        }
+    });
+     // Withdrawal Modal
+     function openWithdrawModal(){
+        document.getElementById('withdrawModal').style.display = 'flex';
+    }
+
+    function closeWithdrawModal(){
+        document.getElementById('withdrawModal').style.display = 'none';
+    }
+
+    async function submitWithdraw(){
+        const amount = Number(document.getElementById('withdrawAmount').value);
+        const balance = Number(document.getElementById('balance').textContent);
+
+        if (!amount || amount <= 0) {
+            return showSnackbar("Enter valid amount", "warning");
+        }
+
+        if (amount > balance) {
+            return showSnackbar("Insufficient balance", "error");
+        }
+
+        try {
+            const res = await fetch('/api/withdraw-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ amount })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Request failed");
+            }
+
+            showSnackbar("Withdrawal request submitted!");
+            closeWithdrawModal();
+
+            document.getElementById('withdrawAmount').value = '';
+
+        } catch (err) {
+            console.error(err);
+            showSnackbar(err.message, "error");
+        }
+    }
+    // 📢 FETCH ACTIVE EVENT
+    let currentVideo = "";
+
+   
+    // 📢 FETCH ACTIVE EVENT
+    async function fetchActiveEvent(){
+        try{
+            const res = await fetch('/api/active-event');
+            const data = await res.json();
+
+            console.log("ACTIVE EVENT:", data);
+
+            document.getElementById('eventHeader').textContent =
+                data.event_name || "NO EVENT";
+
+            document.getElementById('announcementBar').textContent =
+                data.announcement || "Welcome Players";
+
+            updateVideo(data); // ✅ ONLY THIS
+
+        }catch(e){
+            console.error(e);
+        }
+    }
+    function updateVideo(data) {
+        const iframe = document.getElementById('videoFrame');
+
+        if (!data.video_url) return;
+
+        let url = data.video_url;
+
+        // ✅ FORCE AUTOPLAY + MUTE (required by browsers)
+        if (!url.includes("autoplay=1")) {
+            url += (url.includes("?") ? "&" : "?") + "autoplay=1&mute=1";
+        }
+
+        // ✅ Prevent reload spam
+        if (iframe.src !== url) {
+            iframe.src = url;
+        }
+
+        // ✅ HANDLE STREAM ON/OFF
+        if (data.stream_enabled === false) {
+            iframe.style.display = "none";
+        } else {
+            iframe.style.display = "block";
+        }
+    }
+    function animateValue(id, start, end) {
+        document.getElementById(id).textContent = formatNumber(end);
+    }
+    async function fetchHistory(){
+        try{
+            const res = await fetch('/api/game-history');
+            const data = await res.json();
+
+            renderBeadPlate(data);
+        }catch(err){
+            console.error(err);
+        }
+    }
+    function renderBeadPlate(history){
+        const container = document.getElementById('beadPlate');
+        container.innerHTML = '';
+
+        const MAX_ROWS = 6;
+
+        let columns = [];
+        let currentCol = [];
+        let lastWinner = null;
+
+        history.forEach(game => {
+            const winner = game.winner;
+
+            // 🎯 Ignore DRAW & CANCELLED for column switching
+            const isNeutral = (winner === 'DRAW' || winner === 'CANCELLED');
+
+            // 👉 Only MERON/WALA affect column logic
+            if (!isNeutral) {
+                if (
+                    winner !== lastWinner ||
+                    currentCol.length >= MAX_ROWS
+                ){
+                    if(currentCol.length){
+                        columns.push(currentCol);
+                    }
+                    currentCol = [];
+                }
+
+                lastWinner = winner;
+            }
+
+            // 👉 Always push (so DRAW/CANCELLED still show)
+            currentCol.push(winner);
+        });
+
+        if(currentCol.length){
+            columns.push(currentCol);
+        }
+
+        // 🔥 RENDER GRID (column-based)
+        /*container.style.display = 'grid';
+        container.style.gridAutoFlow = 'column';
+        container.style.gridTemplateRows = `repeat(${MAX_ROWS}, 14px)`;
+        container.style.background = '#0f172a';
+        container.style.padding = '6px';
+        container.style.borderRadius = '6px';
+        container.style.gap = '4px';*/
+
+        columns.forEach(col => {
+            for(let i=0; i<MAX_ROWS; i++){
+                const dot = document.createElement('div');
+
+                const size = window.innerWidth <= 768 ? 10 : 12;
+                dot.style.width = size + 'px';
+                dot.style.height = size + 'px';
+                dot.style.borderRadius = '50%';
+                dot.style.border = '2px solid transparent';
+                dot.style.background = 'transparent';
+
+                const result = col[i];
+
+                if(!result){
+                    dot.style.visibility = 'hidden';
+                } else {
+                    switch(result){
+                        case 'MERON':
+                            dot.style.borderColor = 'red';
+                            break;
+                        case 'WALA':
+                            dot.style.borderColor = 'blue';
+                            break;
+                        case 'DRAW':
+                            dot.style.borderColor = 'green';
+                            break;
+                        case 'CANCELLED':
+                            dot.style.borderColor = 'gray';
+                            break;
+                    }
+                }
+
+                container.appendChild(dot);
+                
+            }
+            const plate = document.getElementById('beadPlate');
+                plate.scrollLeft = plate.scrollWidth;
+        });
+    }
+    async function loadBeads() {
+        const res = await fetch('/api/beads-history');
+        const data = await res.json();
+
+        const history = data.history;
+        const counts = data.counts;
+
+        // ✅ SHOW TOTALS
+        document.getElementById('totals').innerHTML = `
+            MERON: ${counts.MERON} |
+            WALA: ${counts.WALA} |
+            DRAW: ${counts.DRAW} |
+            CANCELLED: ${counts.CANCELLED}
+        `;
+
+        const container = document.getElementById('beads');
+        container.innerHTML = '';
+
+        let number = 1;
+
+        history.forEach((result, index) => {
+            const bead = document.createElement('div');
+
+            bead.className = 'bead ' + result.toLowerCase();
+
+            bead.innerText = number++; // ✅ NUMBER INSIDE
+
+            container.appendChild(bead);
+        });
+    }
+    function updateControls(gameStatus, streamEnabled){
+        const startBtn = document.getElementById('btnStart');
+        const closeBtn = document.getElementById('btnClose');
+
+        const meronBtn = document.getElementById('btnMeronWin');
+        const walaBtn = document.getElementById('btnWalaWin');
+        const drawBtn = document.getElementById('btnDrawWin');
+        const cancelBtn = document.getElementById('btnCancelWin');
+
+        const streamOnBtn = document.getElementById('btnStreamOn');
+        const streamOffBtn = document.getElementById('btnStreamOff');
+
+        const betButtons = document.querySelectorAll('.bet-btn, .chips button');
+
+        // 🔴 START GAME
+        toggleBtn(startBtn, gameStatus === 'RESOLVED');
+
+        // 🔵 CLOSE GAME
+        toggleBtn(closeBtn, gameStatus === 'OPEN');
+
+        // 🏁 RESULTS
+        const canDeclare = gameStatus === 'CLOSED';
+        toggleBtn(meronBtn, canDeclare);
+        toggleBtn(walaBtn, canDeclare);
+        toggleBtn(drawBtn, canDeclare);
+        toggleBtn(cancelBtn, canDeclare);
+
+        // 🎲 BETTING
+        betButtons.forEach(btn => {
+            toggleBtn(btn, gameStatus === 'OPEN');
+        });
+
+        // 📺 STREAM
+        toggleBtn(streamOnBtn, !streamEnabled);
+        toggleBtn(streamOffBtn, streamEnabled);
+    }
+
+    function toggleBtn(btn, enabled){
+        if(!btn) return;
+
+        if(enabled){
+            btn.classList.remove('btn-disabled');
+            btn.disabled = false;
+        } else {
+            btn.classList.add('btn-disabled');
+            btn.disabled = true;
+        }
+    }
+    let currentMode = 1; // default iframe
+
+    function switchVideo(mode){
+        const iframe = document.getElementById('videoFrame');
         
-        function showSnackbar(message, success = false) {
-            const snackbar = document.getElementById("snackbar");
-            snackbar.textContent = message;
-            snackbar.className = success ? "show success" : "show";
+
+        currentMode = mode;
+
+        if(mode === 1){
+            iframe.style.display = "block";
+        } 
+    }
+
+    async function fetchMyResult(){
+        try {
+            const res = await fetch('/api/my-result', {
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+
+            console.log("MY RESULT:", data); // 🔥 ADD THIS
+
+            if (data.result === "WIN") {
+                showSnackbar(`🎉 You won.🎉`);
+            } else if (data.result === "LOSE") {
+                showSnackbar("😢 You lost this round", "warning");
+            } else if (data.result === "NO_BET") {
+                console.log("No bet found");
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    //Code for logout
+    async function logout() {
+        try {
+            const res = await fetch('/api/logout', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+            console.log(data);
+
+            // ✅ Redirect after logout
+            showSnackbar("Logged out successfully");
 
             setTimeout(() => {
-                snackbar.className = snackbar.className.replace("show", "");
-            }, 3000);
+                window.location.href = '/index.html';
+            }, 1000);
+
+        } catch (err) {
+            console.error(err);
+            showSnackbar("Logout failed", "error");
         }
+   }
+   function updateMyBetUI(side, amount){
+        // ✅ Update memory (NO DOM READ)
+        if (side === 'MERON') myBets.meron += amount;
+        if (side === 'WALA') myBets.wala += amount;
+        if (side === 'DRAW') myBets.draw += amount;
 
-        // =========================
-        // Loading players
-        // =========================
-        let selectedUserId = null;
-        let currentUserId = null;
+        // ✅ Update UI
+        document.getElementById('myMeron').textContent = myBets.meron;
+        document.getElementById('myWala').textContent = myBets.wala;
+        document.getElementById('myDraw').textContent = myBets.draw;
 
-        async function loadPlayers() {
-            try {
-                const session = await fetch('/api/dashboard', { credentials: 'include' });
-                const user = await session.json();
-                currentUserId = user.id;
+        // ✅ Compute winnings
+        document.getElementById('winMeron').textContent =
+            (myBets.meron * payoutMeron).toFixed(2);
 
-                const res = await fetch('/api/players', { credentials: 'include' });
-                let players = await res.json();
+        document.getElementById('winWala').textContent =
+            (myBets.wala * payoutWala).toFixed(2);
 
-                const filter = document.getElementById('statusFilter').value;
-                if (filter) {
-                    players = players.filter(p => p.status === filter);
-                }
+        document.getElementById('winDraw').textContent =
+            (myBets.draw * payoutDraw).toFixed(2);
 
-                const table = document.getElementById('playersTable');
-                table.innerHTML = '';
-
-                players.forEach(p => {
-
-                    const isDirect = Number(p.parent_id) === Number(currentUserId);
-
-                    const row = document.createElement('tr');
-                    console.log("Player parent:", p.parent_id, "Current user:", currentUserId);
-                    row.innerHTML = `
-                        <td>${p.username}</td>
-                        <td class="actions">
-                            <select class="action-dropdown ${!isDirect ? 'disabled' : ''}" 
-                                onchange="handlePlayerAction(this, this.value, ${p.id}, '${p.status}', ${isDirect})">
-
-                                <option value="">⚙️ Select Action</option>
-                                <option value="promote">⬆️ Set at Agent</option>
-                                <option value="add" ${!isDirect ? 'disabled' : ''}>➕ Load</option>
-                                <option value="withdraw" ${!isDirect ? 'disabled' : ''}>💸 Withdraw</option>
-                                <option value="${p.status === 'suspended' ? 'activate' : 'suspend'}">
-                                    ${p.status === 'suspended' ? '✅ Activate' : '⛔ Suspend'}
-                                </option>
-                                <option value="reset">🔑 Reset Password</option>
-
-                            </select>
-                        </td>
-                        <td>${formatNumber(p.points)}</td>
-                        <td class="status ${p.status}">${p.status}</td>
-                        <td>${new Date(p.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                        })}</td>
-                    `;
-
-                    table.appendChild(row);
-                });
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
         
-        // =========================
-        // Toggle status
-        // =========================
-        async function toggleStatus(userId, currentStatus) {
-            const newStatus = currentStatus === 'suspended' ? 'offline' : 'suspended';
+    }
+    function resetMyBets(){
+        myBets = {
+            meron: 0,
+            wala: 0,
+            draw: 0
+        };
 
-            await fetch('/api/update-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ userId, status: newStatus })
-            });
+        // reset UI
+        document.getElementById('myMeron').textContent = 0;
+        document.getElementById('myWala').textContent = 0;
+        document.getElementById('myDraw').textContent = 0;
 
-            showSnackbar("Status updated");
-            loadPlayers();
-        }
-        // =========================
-        // Reset password
-        // =========================
-        async function resetPassword(userId) {
-            openConfirmModal("Reset password to 123456?", async () => {
-                const res = await fetch('/api/reset-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ userId })
-                });
-
-                const data = await res.json();
-                showSnackbar(data.message);
-            });
-        }
-        // =========================
-        // Loading points modal
-        // =========================
-        function openModal(userId) {
-            selectedUserId = userId;
-            document.getElementById('pointsModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('pointsModal').style.display = 'none';
-        }
-
-        async function confirmAddPoints() {
-            const amount = document.getElementById('pointsInput').value;
-
-            if (!amount || amount <= 0) {
-                showSnackbar("Invalid amount");
-                return;
-            }
-
-            const res = await fetch('/api/add-points', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    userId: selectedUserId,
-                    amount: Number(amount)
-                })
-            });
-
-            const data = await res.json();
-
-            // ✅ HANDLE ERROR FROM SERVER
-            if (!res.ok) {
-                showSnackbar(data.error);
-                return;
-            }
-
-            // ✅ SUCCESS
-            showSnackbar(data.message, true);
-
-            closeModal();
-            loadPlayers();
-        }
-        // =========================
-        // Load withdrawal request count
-        // =========================
-        async function loadWithdrawCount() {
-            try {
-                const res = await fetch('/api/withdrawal-count', {
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-
-                const badge = document.getElementById('withdrawBadge');
-
-                if (data.count > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = data.count;
-                } else {
-                    badge.style.display = 'none';
-                }
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
-        // =========================
-        // Promote user to agent
-        // =========================
-        async function promoteUser(userId) {
-            try {
-                const res = await fetch('/api/promote-user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ userId })
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    showSnackbar(data.error);
-                    return;
-                }
-
-                showSnackbar(data.message, true);
-                loadPlayers();
-
-            } catch (err) {
-                console.error(err);
-                showSnackbar("Server error");
-            }
-        }
-        function handlePlayerAction(selectEl, action, userId, status, isDirect) {
-            if (!action) return;
-
-            switch(action) {
-                case 'promote':
-                    promoteUser(userId);
-                    break;
-
-                case 'add':
-                    if (isDirect) openModal(userId);
-                    break;
-                case 'withdraw':
-                    if (isDirect) openWithdrawModal(userId);
-                    break;
-                case 'activate':
-                case 'suspend':
-                    openConfirmModal(
-                        action === 'activate' ? "Activate this user?" : "Suspend this user?",
-                        () => toggleStatus(userId, status)
-                    );
-                    break;
-
-                case 'reset':
-                    resetPassword(userId);
-                    break;
-            }
-
-            // ✅ Reset dropdown (same behavior as agents but safer)
-            selectEl.value = "";
-        }
-        let confirmCallback = null;
-
-        function openConfirmModal(message, callback) {
-            document.getElementById('confirmMessage').textContent = message;
-            confirmCallback = callback;
-            document.getElementById('confirmModal').style.display = 'flex';
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-            confirmCallback = null;
-        }
-
-        async function confirmAction() {
-            if (confirmCallback) {
-                await confirmCallback(); // ✅ wait for API
-            }
-            closeConfirmModal();
-        }
-        let withdrawUserId = null;
-
-        function openWithdrawModal(userId) {
-            withdrawUserId = userId;
-            document.getElementById('withdrawModal').style.display = 'flex';
-        }
-
-        function closeWithdrawModal() {
-            document.getElementById('withdrawModal').style.display = 'none';
-            document.getElementById('withdrawInput').value = ''; // ✅ reset
-        }
-
-        async function confirmWithdraw() {
-            const amount = document.getElementById('withdrawInput').value;
-
-            if (!amount || amount <= 0) {
-                showSnackbar("Invalid amount");
-                return;
-            }
-
-            const res = await fetch('/api/withdraw-points-player', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    userId: withdrawUserId,
-                    amount: Number(amount)
-                })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                showSnackbar(data.error);
-                return;
-            }
-
-            showSnackbar(data.message, true);
-
-            closeWithdrawModal();   // ✅ close ONLY after success
-            loadPlayers();
-        }
-        //Code for logout
-        async function logout() {
-            try {
-                const res = await fetch('/api/logout', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-                console.log(data);
-
-                // ✅ Redirect after logout
-                showSnackbar("Logged out successfully");
-
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 1000);
-
-            } catch (err) {
-                console.error(err);
-                showSnackbar("Logout failed", "error");
-            }
-        }
-        // Call after session check
-        checkSession();
-        setInterval(loadWithdrawCount, 10000);
-        setInterval(loadPendingCount, 10000);
-    </script>
-
+        document.getElementById('winMeron').textContent = 0;
+        document.getElementById('winWala').textContent = 0;
+        document.getElementById('winDraw').textContent = 0;
+    }
+    checkSession('player');   
+    fetchGame();
+    checkPlayerBalance(); // ✅ initial load
+    //setInterval(fetchActiveEvent, 3000);
+    fetchActiveEvent();
+    fetchHistory();
+    loadBeads();
+    initWebSocket();
+    // 🔥 KEEP CONNECTION ALIVE (PREVENT DISCONNECT)
+   
+</script>
 </body>
 </html>
