@@ -565,7 +565,7 @@ app.get('/api/players', isAuthenticated, async (req, res) => {
       LEFT JOIN users p ON u.parent_id = p.id
       WHERE u.role = 'player'
       AND u.status NOT IN ('pending', 'rejected')
-      AND (u.parent_id = $1 OR p.parent_id = $1 OR p.id = $1)
+      AND u.parent_id = $1
       ORDER BY u.created_at DESC
     `, [userId]);
 
@@ -750,6 +750,7 @@ app.get('/api/agents', isAuthenticated, async (req, res) => {
       LEFT JOIN users p ON u.parent_id = p.id
       WHERE u.role IN ('master_agent', 'sub_agent', 'agent')
       AND u.status NOT IN ('pending', 'rejected')
+      AND u.parent_id = $1
     `;
 
     let params = [];
