@@ -1988,8 +1988,10 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
 
+        // 🔥 GET LATEST GAME
         const gameRes = await pool.query(`
-            SELECT id FROM games
+            SELECT id, winner 
+            FROM games
             ORDER BY created_at DESC
             LIMIT 1
         `);
@@ -1998,8 +2000,9 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
             return res.json({ result: "NO_GAME" });
         }
 
-        const gameId = gameRes.rows[0].id;
+        const { id: gameId, winner } = gameRes.rows[0];
 
+        // 🔥 GET ALL USER BETS (IMPORTANT)
         const betRes = await pool.query(`
             SELECT side, amount
             FROM bets
@@ -2010,27 +2013,50 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
             return res.json({ result: "NO_BET" });
         }
 
-        const bet = betRes.rows[0];
-
-        const gameResultRes = await pool.query(`
-            SELECT winner FROM games WHERE id = $1
-        `, [gameId]);
-
-        const winner = gameResultRes.rows[0].winner;
-
         if (!winner) {
             return res.json({ result: "PENDING" });
         }
 
+        // ❌ CANCELLED (refund already handled in settleGame)
         if (winner === "CANCELLED") {
             return res.json({ result: "CANCELLED" });
         }
 
-        const isWin = bet.side === winner;
+        // 🔥 SUM BETS PER SIDE
+        let totalBet = 0;
+        let winningBet = 0;
 
-        res.json({
-            result: isWin ? "WIN" : "LOSE",
-            winAmount: isWin ? bet.amount : 0 // optional calc
+        for (const bet of betRes.rows) {
+            totalBet += Number(bet.amount);
+
+            if (bet.side === winner) {
+                winningBet += Number(bet.amount);
+            }
+        }
+
+        // ❌ NO WINNING BET
+        if (winningBet === 0) {
+            return res.json({
+                result: "LOSE",
+                winAmount: 0
+            });
+        }
+
+        // ✅ WIN LOGIC
+        let winAmount = 0;
+
+        if (winner === "DRAW") {
+            // 🔥 FIXED: DRAW = 8x
+            winAmount = winningBet * 8;
+        } else {
+            // ⚠️ OPTIONAL: you can compute real payout here
+            // but safer to just return "WIN"
+            winAmount = winningBet; // or 0 if you don’t want to calculate
+        }
+
+        return res.json({
+            result: "WIN",
+            winAmount
         });
 
     } catch (err) {
