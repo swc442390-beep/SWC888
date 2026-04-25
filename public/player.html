@@ -496,17 +496,10 @@ body, html {
         // =========================
         const totalPool =
             data.totalMeron +
-            data.totalWala;
+            data.totalWala +
+            (data.totalDraw || 0);
 
-            // 🎯 TARGET AVERAGE ODDS
-            const TARGET_AVG = 1.83;
-
-            // 🧠 DYNAMIC CUT
-            let CUT = 0;
-
-            if (A > 0 && B > 0) {
-                CUT = (2 * TARGET_AVG * Number(totals.meron) * totals.wala) / ((Number(totals.meron) + totals.wala) ** 2);
-            }
+        const CUT = 0.917;
 
         payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
         payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
@@ -737,17 +730,12 @@ body, html {
 
             const totalPool =
                 data.totalMeron +
-                data.totalWala;
+                data.totalWala +
+                (data.totalDraw || 0);
 
-            // 🎯 TARGET AVERAGE ODDS
-                const TARGET_AVG = 1.83;
-
-                // 🧠 DYNAMIC CUT
-                let CUT = 0;
-
-                if (A > 0 && B > 0) {
-                    CUT = (2 * TARGET_AVG * Number(totals.meron) * totals.wala) / ((Number(totals.meron) + totals.wala) ** 2);
-                }
+            const CUT = 0.917;
+            //const CUT = 0.935; // 5% cut for the house (for better player retention)
+            // avoid divide-by-zero
             payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
             payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
             const DRAW_MULTIPLIER = 8;
