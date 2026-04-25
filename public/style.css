@@ -763,3 +763,12 @@ button:disabled {
     color: #22c55e; /* green */
     font-weight: bold;
 }
+
+#networkTree div {
+    margin: 5px 0;
+    padding-left: 10px;
+}
+
+#networkTree strong {
+    color: #38bdf8;
+}

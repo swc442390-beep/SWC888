@@ -96,7 +96,13 @@
                 <button onclick="closeCommissionModal()">Cancel</button>
             </div>
         </div>
-
+        <div id="networkModal" class="modal">
+            <div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;">
+                <h3>Agent Network</h3>
+                <div id="networkTree"></div>
+                <button onclick="closeNetworkModal()">Close</button>
+            </div>
+        </div>
         <div id="snackbar"></div>
         <footer>
             © 2024 SWC888. All rights reserved.
@@ -309,7 +315,49 @@
         function closeModal() {
             document.getElementById('pointsModal').style.display = 'none';
         }
+        async function openNetworkModal(userId) {
+            try {
+                const res = await fetch(`/api/network-tree/${userId}`, {
+                    credentials: 'include'
+                });
 
+                const tree = await res.json();
+
+                const container = document.getElementById('networkTree');
+                container.innerHTML = renderTree(tree);
+
+                document.getElementById('networkModal').style.display = 'flex';
+
+            } catch (err) {
+                console.error(err);
+                showSnackbar("Failed to load network");
+            }
+        }
+
+        function closeNetworkModal() {
+            document.getElementById('networkModal').style.display = 'none';
+        }
+        function renderTree(node) {
+            if (!node) return '';
+
+            let html = `
+                <div style="margin-left:20px; border-left:1px solid #555; padding-left:10px;">
+                    <div>
+                        <strong>${node.username}</strong> 
+                        (${formatRole(node.role)})
+                    </div>
+            `;
+
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    html += renderTree(child);
+                });
+            }
+
+            html += `</div>`;
+
+            return html;
+        }
         async function confirmAddPoints() {
             const amount = document.getElementById('pointsInput').value;
 
@@ -437,7 +485,7 @@
                                 <option value="load">➕ Load</option>
                                 <option value="withdraw_load">💸 Withdraw Load</option>
                                 <option value="withdraw_commission">💰 Withdraw Commission</option>
-                                
+                                <option value="network">🌐 View Network</option>
                             </select>
                         </td>
                         <td class="wallet-yellow">${formatPHP(a.points)}</td><td>${formatPHP(a.points)}</td>
@@ -594,6 +642,7 @@
             closeCommissionModal();
             loadAgents();
         }
+        
         // =========================
         // Handle dropdown actions
         // =========================
@@ -612,7 +661,9 @@
                 case 'withdraw_commission':
                     openCommissionModal(userId, commission, 'convert');
                     break;
-
+                case 'network':
+                    openNetworkModal(userId);
+                    break;
                 case 'block':
                     toggleStatus(userId, 'offline'); // or pass actual status if needed
                     break;

@@ -203,6 +203,7 @@ async function loadActiveEvent() {
         console.error("Active event load error:", err);
     }
 }
+
 // ==========================
 // INIT
 // ==========================
@@ -210,3 +211,4 @@ connectSocket();
 loadGameStatus();
 loadActiveBets();
 loadActiveEvent();
+

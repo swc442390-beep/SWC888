@@ -244,7 +244,8 @@ const settleGame = async (gameId, winner) => {
     console.error('SETTLE GAME ERROR:', err);
   }
 };
-
+const agentsRoutes = require('./routes/agents');
+app.use('/api', agentsRoutes);
 
 
 // ==========================
