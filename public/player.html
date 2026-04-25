@@ -730,11 +730,21 @@ body, html {
 
             const totalPool =
                 data.totalMeron +
-                data.totalWala +
-                (data.totalDraw || 0);
+                data.totalWala;
 
-            const CUT = 0.917;
-            //const CUT = 0.935; // 5% cut for the house (for better player retention)
+            // 🎯 TARGET AVERAGE ODDS
+            const TARGET_AVG = 1.83;
+
+            // 🧠 DYNAMIC CUT
+            let CUT = 0;
+
+            if (Number(data.totalMeron) > 0 && data.totalWala > 0) {
+                CUT = (2 * TARGET_AVG * Number(data.totalMeron) * data.totalWala) / ((data.totalMeron + data.totalWala) ** 2);
+            }
+
+            // ⚠️ OPTIONAL: only minimum protection (no max as requested)
+            const MIN_CUT = 0.70;
+            CUT = Math.max(MIN_CUT, CUT);
             // avoid divide-by-zero
             payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
             payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;

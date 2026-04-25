@@ -45,10 +45,71 @@ const settleGame = async (gameId, winner) => {
         WHERE game_id = $1
       `, [gameId]);
 
+      if (bets.length === 0) {
+        await pool.query('COMMIT');
+        return;
+      }
+    }
+    // ==========================
+    // 🎯 DRAW LOGIC (SPECIAL CASE)
+    // ==========================
+    if (winner === 'DRAW') {
+
+      const betsRes = await pool.query(`
+        SELECT user_id, side, amount
+        FROM bets
+        WHERE game_id = $1 AND is_resolved = false
+      `, [gameId]);
+
+      const bets = betsRes.rows;
+
+      for (const bet of bets) {
+
+        let payoutAmount = 0;
+        let description = '';
+
+        if (bet.side === 'DRAW') {
+          // 🎯 DRAW wins 8x
+          payoutAmount = Number((bet.amount * 8).toFixed(2));
+          description = 'Win - DRAW (8x)';
+        } else {
+          // 💸 MERON & WALA refunded
+          payoutAmount = bet.amount;
+          description = 'Refund - DRAW result';
+        }
+
+        await pool.query(`
+          UPDATE users
+          SET points = points + $1
+          WHERE id = $2
+        `, [payoutAmount, bet.user_id]);
+
+        await pool.query(`
+          INSERT INTO wallet_transactions
+          (user_id, type, amount, balance_after, description)
+          VALUES ($1, 'credit', $2,
+            (SELECT points FROM users WHERE id=$1),
+            $3)
+        `, [
+          bet.user_id,
+          payoutAmount,
+          description
+        ]);
+      }
+
+      // ✅ mark resolved
+      await pool.query(`
+        UPDATE bets
+        SET is_resolved = true
+        WHERE game_id = $1 AND is_resolved = false
+      `, [gameId]);
+      await pool.query(`
+      DELETE FROM commission_transactions
+      WHERE game_id = $1
+    `, [gameId]);
       await pool.query('COMMIT');
       return;
     }
-
     // ==========================
     // NORMAL SETTLEMENT
     // ==========================
@@ -76,8 +137,7 @@ const settleGame = async (gameId, winner) => {
 
     const totalPool =
       Number(totals.meron) +
-      Number(totals.wala) +
-      Number(totals.draw);
+      Number(totals.wala);
 
     // 🎯 TARGET AVERAGE ODDS
         const TARGET_AVG = 1.83;
@@ -104,12 +164,12 @@ const settleGame = async (gameId, winner) => {
       await pool.query('ROLLBACK');
       return;
     }
-
+    
     // 3. PAY WINNERS
     for (const bet of bets) {
       if (bet.side !== winner) continue;
 
-      const winAmount = Number((bet.amount * payouts[winner]).toFixed(2)); 
+      const winAmount = Number((bet.amount * payouts[winner]).toFixed(2));
 
       await pool.query(`
         UPDATE users
