@@ -74,35 +74,23 @@ const settleGame = async (gameId, winner) => {
 
     const totals = totalsRes.rows[0];
 
-    // =========================
-        // 💰 PAYOUT COMPUTATION
-        // =========================
-        const A = Number(totals.meron) || 0;
-        const B = Number(totals.wala) || 0;
+    const totalPool =
+      Number(totals.meron) +
+      Number(totals.wala);
 
-        const totalPool = A + B;
-
-        // 🎯 TARGET AVERAGE ODDS
+    // 🎯 TARGET AVERAGE ODDS
         const TARGET_AVG = 1.83;
 
         // 🧠 DYNAMIC CUT
         let CUT = 0;
 
         if (A > 0 && B > 0) {
-            CUT = (2 * TARGET_AVG * A * B) / ((A + B) ** 2);
+            CUT = (2 * TARGET_AVG * Number(totals.meron) * totals.wala) / ((Number(totals.meron) + totals.wala) ** 2);
         }
 
-        // ⚠️ OPTIONAL: only minimum protection (no max as requested)
-        const MIN_CUT = 0.70;
-        CUT = Math.max(MIN_CUT, CUT);
-
-        // 🎲 FINAL ODDS
-        payoutMeron = A ? (totalPool / A) * CUT : 0;
-        payoutWala  = B ? (totalPool / B) * CUT : 0;
-
     const payouts = {
-      MERON: A ? (totalPool / A) * CUT : 0,
-      WALA: B ? (totalPool / B) * CUT : 0,
+      MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,
+      WALA: totals.wala ? (totalPool / totals.wala) * CUT : 0,
       DRAW: 8
     };
 
