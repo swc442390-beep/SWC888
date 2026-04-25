@@ -324,7 +324,12 @@
                 const tree = await res.json();
 
                 const container = document.getElementById('networkTree');
-                container.innerHTML = renderTree(tree);
+
+                if (!tree) {
+                    container.innerHTML = "<p>No network found</p>";
+                } else {
+                    container.innerHTML = renderTree(tree);
+                }
 
                 document.getElementById('networkModal').style.display = 'flex';
 
@@ -479,7 +484,7 @@
                         <td><p class="btn add">${a.username}</p></td>
                         <td>
                             <select class="action-dropdown ${!isDirect ? 'disabled' : ''}" 
-                                onchange="handleAgentAction(this.value, ${a.id}, ${a.points || 0}, ${a.commission_earnings || 0})">
+                                onchange="handleAgentAction(this.value, ${a.id}, ${a.points || 0}, ${a.commission_earnings || 0}, this)"
                                     
                                 <option value="">⚙️ Select Action</option>
                                 <option value="load">➕ Load</option>
@@ -646,7 +651,7 @@
         // =========================
         // Handle dropdown actions
         // =========================
-        function handleAgentAction(action, userId, points, commission) {
+        function handleAgentAction(action, userId, points, commission, el) {
             if (!action) return;
 
             switch(action) {
@@ -670,7 +675,7 @@
             }
 
             // Reset dropdown after action
-            event.target.value = "";
+            el.value = "";
         }
         function formatPHP(amount) {
             return new Intl.NumberFormat('en-PH', {
