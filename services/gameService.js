@@ -77,8 +77,8 @@ const settleGame = async (gameId, winner) => {
     // =========================
         // 💰 PAYOUT COMPUTATION
         // =========================
-        const A = data.totalMeron;
-        const B = data.totalWala;
+        const A = Number(totals.meron) || 0;
+        const B = Number(totals.wala) || 0;
 
         const totalPool = A + B;
 
