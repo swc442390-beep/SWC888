@@ -96,9 +96,13 @@ const settleGame = async (gameId, winner) => {
         const MIN_CUT = 0.70;
         CUT = Math.max(MIN_CUT, CUT);
 
+        // 🎲 FINAL ODDS
+        payoutMeron = A ? (totalPool / A) * CUT : 0;
+        payoutWala  = B ? (totalPool / B) * CUT : 0;
+
     const payouts = {
-      MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,
-      WALA: totals.wala ? (totalPool / totals.wala) * CUT : 0,
+      MERON: A ? (totalPool / A) * CUT : 0,
+      WALA: B ? (totalPool / B) * CUT : 0,
       DRAW: 8
     };
 
