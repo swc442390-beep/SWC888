@@ -78,7 +78,7 @@ const settleGame = async (gameId, winner) => {
       Number(totals.meron) +
       Number(totals.wala);
 
-    const CUT = 0.955;
+    const CUT = 0.915;
 
     const payouts = {
       MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,

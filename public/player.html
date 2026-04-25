@@ -498,7 +498,7 @@ body, html {
             data.totalMeron +
             data.totalWala;
 
-        const CUT = 0.955;
+        const CUT = 0.915;
 
         payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
         payoutWala = data.totalWala ? (totalPool / data.totalWala) * CUT : 0;
@@ -731,7 +731,7 @@ body, html {
                 data.totalMeron +
                 data.totalWala;
 
-            const CUT = 0.955;
+            const CUT = 0.915;
             //const CUT = 0.935; // 5% cut for the house (for better player retention)
             // avoid divide-by-zero
             payoutMeron = data.totalMeron ? (totalPool / data.totalMeron) * CUT : 0;
