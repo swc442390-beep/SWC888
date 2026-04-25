@@ -177,7 +177,7 @@ const settleGame = async (gameId, winner) => {
         // 🧠 DYNAMIC CUT
         let CUT = 0;
 
-        if (A > 0 && B > 0) {
+        if (Number(totals.meron) > 0 && Number(totals.wala) > 0) {
             CUT = (2 * TARGET_AVG * Number(totals.meron) * Number(totals.wala)) / ((Number(totals.meron) + Number(totals.wala)) ** 2);
         }
 
