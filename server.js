@@ -2123,8 +2123,32 @@ app.get('/api/commission-summary', async (req, res) => {
     }
 });
 
+// ==========================
+// SUPERADMIN SECURITY CHECK
+// ==========================
+app.post('/api/verify-superadmin', isAuthenticated, async (req, res) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ error: "Password required" });
+        }
+
+        if (password !== process.env.SUPERADMINPASS) {
+            return res.status(401).json({ error: "Invalid system password" });
+        }
+
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
   console.log(`HTTP + WebSocket running on port ${PORT}`);
 });
+
