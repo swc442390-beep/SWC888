@@ -34,11 +34,10 @@ const settleGame = async (gameId, winner) => {
   await pool.query('BEGIN');
 
   try {
-    // ==========================
-    // ❌ HANDLE CANCELLED
-    // ==========================
+    // ❌ HANDLE CANCELLED (refund all + remove commissions)
     if (winner === 'CANCELLED') {
 
+      // 1. REFUND ONLY UNRESOLVED BETS
       const bets = await pool.query(`
         SELECT id, user_id, amount 
         FROM bets 
@@ -65,12 +64,14 @@ const settleGame = async (gameId, winner) => {
         ]);
       }
 
+      // ✅ MARK BETS AS RESOLVED
       await pool.query(`
         UPDATE bets
         SET is_resolved = true
         WHERE game_id = $1 AND is_resolved = false
       `, [gameId]);
 
+      // ❌ REMOVE COMMISSIONS
       await pool.query(`
         DELETE FROM commission_transactions
         WHERE game_id = $1
@@ -81,82 +82,10 @@ const settleGame = async (gameId, winner) => {
     }
 
     // ==========================
-    // 🔥 HANDLE DRAW (NEW LOGIC)
-    // ==========================
-    if (winner === 'DRAW') {
-
-      const bets = await pool.query(`
-        SELECT id, user_id, side, amount
-        FROM bets
-        WHERE game_id = $1 AND is_resolved = false
-      `, [gameId]);
-
-      for (const bet of bets.rows) {
-
-        if (bet.side === 'DRAW') {
-          // ✅ DRAW WINS 8x
-          const winAmount = bet.amount * 8;
-
-          await pool.query(`
-            UPDATE users
-            SET points = points + $1
-            WHERE id = $2
-          `, [winAmount, bet.user_id]);
-
-          await pool.query(`
-            INSERT INTO wallet_transactions
-            (user_id, type, amount, balance_after, description)
-            VALUES ($1, 'credit', $2,
-              (SELECT points FROM users WHERE id=$1),
-              $3)
-          `, [
-            bet.user_id,
-            winAmount,
-            `Win - DRAW`
-          ]);
-
-        } else {
-          // ✅ REFUND MERON/WALA
-          await pool.query(`
-            UPDATE users
-            SET points = points + $1
-            WHERE id = $2
-          `, [bet.amount, bet.user_id]);
-
-          await pool.query(`
-            INSERT INTO wallet_transactions
-            (user_id, type, amount, balance_after, description)
-            VALUES ($1, 'credit', $2,
-              (SELECT points FROM users WHERE id=$1),
-              $3)
-          `, [
-            bet.user_id,
-            bet.amount,
-            `Refund - DRAW`
-          ]);
-        }
-      }
-
-      await pool.query(`
-        UPDATE bets
-        SET is_resolved = true
-        WHERE game_id = $1 AND is_resolved = false
-      `, [gameId]);
-
-      // optional: remove commissions (same as cancelled)
-      await pool.query(`
-        DELETE FROM commission_transactions
-        WHERE game_id = $1
-      `, [gameId]);
-
-      await pool.query('COMMIT');
-      return;
-    }
-
-    // ==========================
-    // ✅ NORMAL SETTLEMENT (UNCHANGED)
+    // NORMAL SETTLEMENT
     // ==========================
 
+    // 1. GET UNRESOLVED BETS
     const betsRes = await pool.query(`
       SELECT user_id, side, amount
       FROM bets
@@ -165,6 +94,7 @@ const settleGame = async (gameId, winner) => {
 
     const bets = betsRes.rows;
 
+    // 2. GET TOTAL POOLS (ONLY UNRESOLVED)
     const totalsRes = await pool.query(`
       SELECT
         COALESCE(SUM(CASE WHEN side='MERON' THEN amount END),0) AS meron,
@@ -177,24 +107,23 @@ const settleGame = async (gameId, winner) => {
     const totals = totalsRes.rows[0];
 
     const A = data.totalMeron;
-    const B = data.totalWala;
+            const B = data.totalWala;
 
-    const totalPool = A + B;
+            const totalPool = A + B;
 
-    // 🎯 TARGET AVERAGE ODDS
-    const TARGET_AVG = 1.83;
+            // 🎯 TARGET AVERAGE ODDS
+            const TARGET_AVG = 1.83;
 
-    // 🧠 DYNAMIC CUT
-    let CUT = 0;
+            // 🧠 DYNAMIC CUT
+            let CUT = 0;
 
-    if (A > 0 && B > 0) {
-        CUT = (2 * TARGET_AVG * A * B) / ((A + B) ** 2);
-    }
+            if (A > 0 && B > 0) {
+                CUT = (2 * TARGET_AVG * A * B) / ((A + B) ** 2);
+            }
 
-    // ⚠️ OPTIONAL: only minimum protection (no max as requested)
-    const MIN_CUT = 0.70;
-    CUT = Math.max(MIN_CUT, CUT);
-
+            // ⚠️ OPTIONAL: only minimum protection (no max as requested)
+            const MIN_CUT = 0.70;
+            CUT = Math.max(MIN_CUT, CUT);
 
     const payouts = {
       MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,
@@ -202,11 +131,13 @@ const settleGame = async (gameId, winner) => {
       DRAW: 8
     };
 
+    // ❌ SAFETY: no winners
     if (!payouts[winner]) {
       await pool.query('ROLLBACK');
       return;
     }
 
+    // 3. PAY WINNERS
     for (const bet of bets) {
       if (bet.side !== winner) continue;
 
@@ -231,6 +162,7 @@ const settleGame = async (gameId, winner) => {
       ]);
     }
 
+    // ✅ MARK ALL BETS AS RESOLVED (VERY IMPORTANT)
     await pool.query(`
       UPDATE bets
       SET is_resolved = true
@@ -244,8 +176,7 @@ const settleGame = async (gameId, winner) => {
     console.error('SETTLE GAME ERROR:', err);
   }
 };
-const agentsRoutes = require('./routes/agents');
-app.use('/api', agentsRoutes);
+
 
 
 // ==========================
@@ -2001,10 +1932,8 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
 
-        // 🔥 GET LATEST GAME
         const gameRes = await pool.query(`
-            SELECT id, winner 
-            FROM games
+            SELECT id FROM games
             ORDER BY created_at DESC
             LIMIT 1
         `);
@@ -2013,9 +1942,8 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
             return res.json({ result: "NO_GAME" });
         }
 
-        const { id: gameId, winner } = gameRes.rows[0];
+        const gameId = gameRes.rows[0].id;
 
-        // 🔥 GET ALL USER BETS (IMPORTANT)
         const betRes = await pool.query(`
             SELECT side, amount
             FROM bets
@@ -2026,50 +1954,27 @@ app.get('/api/my-result', isAuthenticated, async (req, res) => {
             return res.json({ result: "NO_BET" });
         }
 
+        const bet = betRes.rows[0];
+
+        const gameResultRes = await pool.query(`
+            SELECT winner FROM games WHERE id = $1
+        `, [gameId]);
+
+        const winner = gameResultRes.rows[0].winner;
+
         if (!winner) {
             return res.json({ result: "PENDING" });
         }
 
-        // ❌ CANCELLED (refund already handled in settleGame)
         if (winner === "CANCELLED") {
             return res.json({ result: "CANCELLED" });
         }
 
-        // 🔥 SUM BETS PER SIDE
-        let totalBet = 0;
-        let winningBet = 0;
+        const isWin = bet.side === winner;
 
-        for (const bet of betRes.rows) {
-            totalBet += Number(bet.amount);
-
-            if (bet.side === winner) {
-                winningBet += Number(bet.amount);
-            }
-        }
-
-        // ❌ NO WINNING BET
-        if (winningBet === 0) {
-            return res.json({
-                result: "LOSE",
-                winAmount: 0
-            });
-        }
-
-        // ✅ WIN LOGIC
-        let winAmount = 0;
-
-        if (winner === "DRAW") {
-            // 🔥 FIXED: DRAW = 8x
-            winAmount = winningBet * 8;
-        } else {
-            // ⚠️ OPTIONAL: you can compute real payout here
-            // but safer to just return "WIN"
-            winAmount = winningBet; // or 0 if you don’t want to calculate
-        }
-
-        return res.json({
-            result: "WIN",
-            winAmount
+        res.json({
+            result: isWin ? "WIN" : "LOSE",
+            winAmount: isWin ? bet.amount : 0 // optional calc
         });
 
     } catch (err) {
@@ -2136,32 +2041,8 @@ app.get('/api/commission-summary', async (req, res) => {
     }
 });
 
-// ==========================
-// SUPERADMIN SECURITY CHECK
-// ==========================
-app.post('/api/verify-superadmin', isAuthenticated, async (req, res) => {
-    try {
-        const { password } = req.body;
-
-        if (!password) {
-            return res.status(400).json({ error: "Password required" });
-        }
-
-        if (password !== process.env.SUPERADMINPASS) {
-            return res.status(401).json({ error: "Invalid system password" });
-        }
-
-        res.json({ success: true });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
   console.log(`HTTP + WebSocket running on port ${PORT}`);
 });
-
