@@ -169,11 +169,21 @@ const settleGame = async (gameId, winner) => {
 
     const totalPool =
       Number(totals.meron) +
-      Number(totals.wala) +
-      Number(totals.draw);
+      Number(totals.wala);
 
-    //const CUT = 0.915;
-    const CUT = parseFloat(process.env.STANDARDCUT);
+    // 🎯 TARGET AVERAGE ODDS
+        const TARGET_AVG = 1.83;
+
+        // 🧠 DYNAMIC CUT
+        let CUT = 0;
+
+        if (A > 0 && B > 0) {
+            CUT = (2 * TARGET_AVG * Number(totals.meron) * Number(totals.wala)) / ((Number(totals.meron) + Number(totals.wala)) ** 2);
+        }
+
+        // ⚠️ OPTIONAL: only minimum protection (no max as requested)
+        const MIN_CUT = 0.70;
+        CUT = Math.max(MIN_CUT, CUT);
 
     const payouts = {
       MERON: totals.meron ? (totalPool / totals.meron) * CUT : 0,
