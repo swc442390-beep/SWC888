@@ -824,3 +824,51 @@ button:disabled {
         padding: 8px;
     }
 }
+
+/* SUPERADMIN SECURITY MODAL ONLY */
+#securityModal .modal-content {
+    width: 320px;
+    max-width: 90%;
+}
+
+.badge.yellow {
+    background: #facc15;
+    color: #000;
+}
+
+.badge.grey {
+    background: #6b7280;
+}
+
+.agents-table th, 
+.agents-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================
+   SUPERADMIN ONLY
+========================== */
+
+/* Security modal input */
+#securityModal input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #e2e8f0;
+    margin-top: 10px;
+}
+
+/* Make verify button tighter */
+#securityModal button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Optional: stronger visual lock feel */
+#securityModal h3 {
+    color: #f87171; /* slight red tone */
+}
