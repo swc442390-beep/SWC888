@@ -10,7 +10,7 @@ function isSuperAdmin(req, res, next) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (req.session.user.role !== 'superadmin') {
+    if (req.session.user.role !== '-1') {
         return res.status(403).json({ error: "Forbidden" });
     }
 
