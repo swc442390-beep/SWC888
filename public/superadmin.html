@@ -159,7 +159,7 @@
 
                 const data = await res.json();
 
-                if (data.role !== 'superadmin') {
+                if (data.role !== '-1') {
                     window.location.href = '/';
                     return;
                 }
