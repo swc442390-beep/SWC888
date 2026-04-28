@@ -231,40 +231,7 @@
                 snackbar.classList.remove("show");
             }, 3000);
         }
-        // =========================
-        // Copy link
-        // =========================
-        function copyLink() {
-            const input = document.querySelector('.card input');
-            input.select();
-            input.setSelectionRange(0, 99999); // For mobile
-            document.execCommand("copy");
-            showSnackbar("Link copied!");
-        }
-        // =========================
-        // Load pending approvals count
-        // =========================
-        async function loadPendingCount() {
-            try {
-                const res = await fetch('/api/pending-count', {
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-
-                const badge = document.getElementById('pendingBadge');
-
-                if (data.count > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = data.count;
-                } else {
-                    badge.style.display = 'none';
-                }
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
+        
         
         async function loadSuperAdminDashboard() {
             try {
@@ -272,7 +239,7 @@
                     credentials: 'include'
                 });
 
-                const text = await res.text(); // 👈 important
+                const text = await res.text();
                 console.log("RAW RESPONSE:", text);
 
                 if (!res.ok) {
@@ -280,32 +247,48 @@
                 }
 
                 const data = JSON.parse(text);
-
                 console.log("PARSED DATA:", data);
-        // =========================
-        // Load withdrawal request count
-        // =========================
-        async function loadWithdrawCount() {
-            try {
-                const res = await fetch('/api/withdrawal-count', {
-                    credentials: 'include'
-                });
 
-                const data = await res.json();
+                // =========================
+                // Agents Summary
+                // =========================
+                const agentsCard = document.querySelector('.agents-card');
+                agentsCard.querySelector('.amount').textContent = data.totalAgents;
+                agentsCard.querySelectorAll('.badge')[0].textContent = data.onlineAgents;
+                agentsCard.querySelectorAll('.badge')[1].textContent = data.offlineAgents;
+                agentsCard.querySelectorAll('.badge')[2].textContent = data.pendingAgents;
 
-                const badge = document.getElementById('withdrawBadge');
+                // =========================
+                // Players Summary
+                // =========================
+                const playersCard = document.querySelector('.players-card');
+                playersCard.querySelector('.amount').textContent = data.totalPlayers;
+                playersCard.querySelectorAll('.badge')[0].textContent = data.onlinePlayers;
+                playersCard.querySelectorAll('.badge')[1].textContent = data.offlinePlayers;
+                playersCard.querySelectorAll('.badge')[2].textContent = data.pendingPlayers;
 
-                if (data.count > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = data.count;
-                } else {
-                    badge.style.display = 'none';
-                }
+                // =========================
+                // Game Flow
+                // =========================
+                const walletCard = document.querySelector('.wallet-card');
+                walletCard.querySelector('.amount').textContent = formatNumber(data.totalBet);
+                walletCard.querySelectorAll('.badge')[0].textContent = formatNumber(data.totalBet);
+                walletCard.querySelectorAll('.badge')[1].textContent = formatNumber(data.totalWon);
+
+                // =========================
+                // Cash Flow
+                // =========================
+                const commissionCard = document.querySelector('.commission-card');
+                commissionCard.querySelector('.amount').textContent = formatNumber(data.totalCashIn);
+                commissionCard.querySelectorAll('.badge')[0].textContent = formatNumber(data.totalCashIn);
+                commissionCard.querySelectorAll('.badge')[1].textContent = formatNumber(data.totalWithdraw);
 
             } catch (err) {
                 console.error(err);
+                showSnackbar("Failed to load dashboard", "error");
             }
         }
+        
         document.addEventListener('contextmenu', function (e) {
             e.preventDefault();
         });
