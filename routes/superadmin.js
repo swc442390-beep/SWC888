@@ -24,7 +24,7 @@ router.post('/verify-superadmin', isSuperAdmin, async (req, res) => {
     const { password } = req.body;
 
     // ⚠️ STORE THIS IN ENV LATER
-    const SYSTEM_PASSWORD = process.env.SUPERADMIN_PASSWORD || "123456";
+    const SYSTEM_PASSWORD = process.env.SUPERADMIN_PASSWORD;
 
     if (password !== SYSTEM_PASSWORD) {
         return res.status(401).json({ error: "Invalid password" });
