@@ -1,3 +1,6 @@
+const express = require('express');
+const router = express.Router();
+const pool = require('../db/connection');
 router.get('/superadmin/dashboard', isSuperAdmin, async (req, res) => {
     try {
         console.log("📊 Loading superadmin dashboard...");
