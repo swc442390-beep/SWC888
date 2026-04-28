@@ -27,7 +27,7 @@ router.get('/superadmin/dashboard', isSuperAdmin, async (req, res) => {
         `);
 
         // ==========================
-        // TOTAL BETS
+        // BETS
         // ==========================
         const bets = await pool.query(`
             SELECT COALESCE(SUM(amount), 0) AS total_bet
@@ -45,6 +45,7 @@ router.get('/superadmin/dashboard', isSuperAdmin, async (req, res) => {
             FROM wallet_transactions
         `);
 
+        // ✅ SINGLE CLEAN RESPONSE
         const response = {
             totalAgents: Number(agents.rows[0]?.total || 0),
             onlineAgents: Number(agents.rows[0]?.online || 0),
