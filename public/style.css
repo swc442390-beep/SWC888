@@ -562,7 +562,10 @@ button:active {
     background: #1e293b;
     padding: 20px;
     border-radius: 12px;
-    width: 300px;
+    width: 90%;
+    max-width: 900px;   /* 🔥 bigger modal */
+    max-height: 80vh;   /* 🔥 prevent overflow */
+    overflow-y: auto;   /* 🔥 scroll inside modal */
 }
 
 .action-dropdown {
