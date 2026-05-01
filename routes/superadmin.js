@@ -8,7 +8,6 @@ function isSuperAdmin(req, res, next) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Superadmin role = '-1'
     if (req.session.user.role !== '-1') {
         return res.status(403).json({ error: "Forbidden" });
     }
@@ -71,12 +70,18 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
         `);
 
         // =========================
-        // BETS
+        // GAME FLOW (BETS & WINS)
         // =========================
-        const bets = await pool.query(`
-            SELECT COALESCE(SUM(amount), 0) AS total_bet
-            FROM bets
-            WHERE is_dummy = false
+        const gameFlow = await pool.query(`
+            SELECT
+                COALESCE(SUM(CASE 
+                    WHEN type = 'debit' AND description ILIKE 'Bet on%' 
+                    THEN amount ELSE 0 END), 0) AS total_bet,
+
+                COALESCE(SUM(CASE 
+                    WHEN type = 'credit' AND description ILIKE 'Win -%' 
+                    THEN amount ELSE 0 END), 0) AS total_won
+            FROM wallet_transactions
         `);
 
         // =========================
@@ -101,7 +106,12 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
         return res.json({
             totalAgents: Number(agents.rows[0]?.total || 0),
             totalPlayers: Number(players.rows[0]?.total || 0),
-            totalBet: Number(bets.rows[0]?.total_bet || 0),
+
+            // ✅ GAME FLOW (FIXED)
+            totalBet: Number(gameFlow.rows[0]?.total_bet || 0),
+            totalWon: Number(gameFlow.rows[0]?.total_won || 0),
+
+            // ✅ CASH FLOW
             totalCashIn: Number(cash.rows[0]?.cash_in || 0),
             totalWithdraw: Number(cash.rows[0]?.withdraw || 0),
 
@@ -113,10 +123,7 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
             // ✅ Player status
             onlinePlayers: playerMap.online,
             offlinePlayers: playerMap.offline,
-            pendingPlayers: playerMap.pending,
-
-            // (you can compute later)
-            totalWon: 0
+            pendingPlayers: playerMap.pending
         });
 
     } catch (err) {
