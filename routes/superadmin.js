@@ -8,7 +8,7 @@ function isSuperAdmin(req, res, next) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // ⚠️ FIX: use string role consistently
+    // Superadmin role = '-1'
     if (req.session.user.role !== '-1') {
         return res.status(403).json({ error: "Forbidden" });
     }
@@ -16,11 +16,31 @@ function isSuperAdmin(req, res, next) {
     next();
 }
 
+// ✅ Helper: map status counts safely
+function mapStatus(rows) {
+    const map = {
+        online: 0,
+        offline: 0,
+        pending: 0
+    };
+
+    rows.forEach(r => {
+        if (map.hasOwnProperty(r.status)) {
+            map[r.status] = Number(r.count);
+        }
+    });
+
+    return map;
+}
+
 // ✅ Route
 router.get('/dashboard', isSuperAdmin, async (req, res) => {
     console.log("🔥 SUPERADMIN DASHBOARD HIT");
 
     try {
+        // =========================
+        // TOTAL COUNTS
+        // =========================
         const agents = await pool.query(`
             SELECT COUNT(*) AS total
             FROM users
@@ -33,12 +53,35 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
             WHERE role = 'player'
         `);
 
+        // =========================
+        // STATUS COUNTS
+        // =========================
+        const agentStatus = await pool.query(`
+            SELECT status, COUNT(*) AS count
+            FROM users
+            WHERE role IN ('agent','sub_agent','master_agent')
+            GROUP BY status
+        `);
+
+        const playerStatus = await pool.query(`
+            SELECT status, COUNT(*) AS count
+            FROM users
+            WHERE role = 'player'
+            GROUP BY status
+        `);
+
+        // =========================
+        // BETS
+        // =========================
         const bets = await pool.query(`
             SELECT COALESCE(SUM(amount), 0) AS total_bet
             FROM bets
             WHERE is_dummy = false
         `);
 
+        // =========================
+        // CASH FLOW
+        // =========================
         const cash = await pool.query(`
             SELECT
                 COALESCE(SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END), 0) AS cash_in,
@@ -46,6 +89,15 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
             FROM wallet_transactions
         `);
 
+        // =========================
+        // MAP STATUS RESULTS
+        // =========================
+        const agentMap = mapStatus(agentStatus.rows);
+        const playerMap = mapStatus(playerStatus.rows);
+
+        // =========================
+        // FINAL RESPONSE
+        // =========================
         return res.json({
             totalAgents: Number(agents.rows[0]?.total || 0),
             totalPlayers: Number(players.rows[0]?.total || 0),
@@ -53,18 +105,22 @@ router.get('/dashboard', isSuperAdmin, async (req, res) => {
             totalCashIn: Number(cash.rows[0]?.cash_in || 0),
             totalWithdraw: Number(cash.rows[0]?.withdraw || 0),
 
-            // TEMP SAFE VALUES
-            onlineAgents: 0,
-            offlineAgents: 0,
-            pendingAgents: 0,
-            onlinePlayers: 0,
-            offlinePlayers: 0,
-            pendingPlayers: 0,
+            // ✅ Agent status
+            onlineAgents: agentMap.online,
+            offlineAgents: agentMap.offline,
+            pendingAgents: agentMap.pending,
+
+            // ✅ Player status
+            onlinePlayers: playerMap.online,
+            offlinePlayers: playerMap.offline,
+            pendingPlayers: playerMap.pending,
+
+            // (you can compute later)
             totalWon: 0
         });
 
     } catch (err) {
-        console.error("❌ SUPERADMIN ERROR:", err); // 👈 THIS IS WHAT WE NEED
+        console.error("❌ SUPERADMIN ERROR:", err);
         return res.status(500).json({
             error: err.message,
             stack: err.stack
